@@ -1,0 +1,759 @@
+/* Auth screens — the same split card the agent panels use, restained for the
+   admin console: the brand panel runs indigo with a violet highlight instead of
+   navy with a sky one. Every colour here comes from a token, so the difference
+   lives in tokens.css and not in this file. */
+
+/* ---------------------------------------------------------------- shell -- */
+
+.auth-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  padding: var(--space-5);
+  background-color: var(--color-page);
+}
+
+.auth-card {
+  display: flex;
+  width: 100%;
+  max-width: var(--card-width);
+  min-height: var(--card-min-height);
+  overflow: hidden;
+  background-color: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+/* ----------------------------------------------------------- brand pane -- */
+
+.brand-panel {
+  position: relative;
+  display: flex;
+  flex: 0 0 var(--panel-width);
+  flex-direction: column;
+  width: var(--panel-width);
+  padding: var(--space-8);
+  overflow: hidden;
+  color: #ffffff;
+  background-color: var(--color-brand-panel);
+}
+
+.brand-panel__blob {
+  position: absolute;
+  border-radius: var(--radius-pill);
+  pointer-events: none;
+}
+
+.brand-panel__blob--one {
+  top: -59.99px;
+  left: 239.99px;
+  width: 239.997px;
+  height: 239.997px;
+  background-color: var(--color-panel-blob-soft);
+}
+
+.brand-panel__blob--two {
+  top: 119.99px;
+  left: 299.99px;
+  width: 149.999px;
+  height: 149.999px;
+  background-color: var(--color-panel-blob-accent);
+}
+
+.brand-panel__blob--three {
+  bottom: -45px;
+  left: -45px;
+  width: 209.99px;
+  height: 209.99px;
+  background-color: var(--color-panel-blob-soft);
+}
+
+.brand-panel > *:not(.brand-panel__blob) {
+  position: relative;
+  z-index: 1;
+}
+
+.brand-panel__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.brand-panel__mark {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 37.497px;
+  height: 37.497px;
+  background-color: var(--color-surface);
+  border-radius: var(--radius-md);
+}
+
+.brand-panel__mark img {
+  display: block;
+  width: 18.749px;
+  height: 18.749px;
+}
+
+.brand-panel__name {
+  font-size: var(--text-md);
+  font-weight: 700;
+  line-height: var(--leading-md);
+  font-variation-settings: 'opsz' 14;
+}
+
+.brand-panel__org {
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+  color: var(--color-panel-text);
+}
+
+.brand-panel__headline {
+  margin-top: var(--space-8);
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  line-height: var(--leading-2xl);
+  font-variation-settings: 'opsz' 14;
+}
+
+.brand-panel__copy {
+  max-width: 300px;
+  margin-top: var(--space-5);
+  font-size: var(--text-sm);
+  line-height: 21.328px;
+  color: var(--color-panel-body);
+}
+
+/* The stats block and the footer each absorb half of the panel's leftover
+   height — that is what makes the 600px and 626.5px frames line up. */
+.brand-panel__stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 11.25px;
+  margin-top: auto;
+  margin-bottom: 41.576px;
+  padding-top: 19.015px;
+}
+
+.stat-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-height: 83.394px;
+  padding: var(--space-4);
+  background-color: var(--color-panel-tile);
+  border-radius: var(--radius-md);
+}
+
+.stat-tile__icon {
+  display: block;
+  width: var(--icon-size);
+  height: var(--icon-size);
+}
+
+.stat-tile__value {
+  margin-top: var(--space-2);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  line-height: var(--leading-lg);
+  font-variation-settings: 'opsz' 14;
+}
+
+.stat-tile__label {
+  font-size: var(--text-xs);
+  line-height: 14.063px;
+  color: var(--color-panel-text);
+}
+
+.brand-panel__footer {
+  margin-top: auto;
+  padding-top: 23.201px;
+  border-top: var(--field-border) solid var(--color-panel-rule);
+}
+
+.brand-panel__ministry {
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+  color: var(--color-panel-text);
+}
+
+.brand-panel__notice {
+  margin-top: 1.875px;
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+  color: var(--color-panel-footer);
+}
+
+/* ------------------------------------------------------------- form pane -- */
+
+.auth-pane {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  padding: var(--space-9);
+}
+
+.auth-back {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: var(--space-2);
+  padding-bottom: var(--space-7);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  line-height: var(--leading-xs);
+  color: var(--color-muted);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  font-variation-settings: 'opsz' 14;
+}
+
+.auth-back:hover {
+  text-decoration: underline;
+}
+
+.auth-back img {
+  display: block;
+  width: 13.12px;
+  height: 13.12px;
+}
+
+.auth-pane__head {
+  padding-bottom: var(--space-7);
+}
+
+.auth-pane__head--login {
+  padding-top: var(--space-8);
+}
+
+/* The one place on the form pane that carries the admin accent — it names the
+   console, so it should read in the console's colour rather than the shared
+   blue every panel's badge uses. */
+.auth-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  line-height: var(--leading-xs);
+  color: var(--color-brand-accent-text);
+  background-color: var(--color-brand-accent-soft);
+  border-radius: var(--radius-pill);
+  font-variation-settings: 'opsz' 14;
+}
+
+.auth-badge img {
+  display: block;
+  width: 13.12px;
+  height: 13.12px;
+}
+
+.auth-icon-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44.999px;
+  height: 44.999px;
+  border-radius: var(--radius-badge);
+}
+
+.auth-icon-badge--amber {
+  background-color: var(--color-icon-badge-amber);
+}
+
+.auth-icon-badge--indigo {
+  background-color: var(--color-icon-badge-indigo);
+}
+
+.auth-icon-badge--green {
+  background-color: var(--color-icon-badge-green);
+}
+
+.auth-icon-badge img {
+  display: block;
+  width: 22.494px;
+  height: 22.494px;
+}
+
+.auth-pane__title {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  line-height: var(--leading-xl);
+  color: var(--color-heading);
+  font-variation-settings: 'opsz' 14;
+}
+
+.auth-badge + .auth-pane__title {
+  margin-top: var(--space-5);
+}
+
+.auth-icon-badge + .auth-pane__title {
+  margin-top: 18.75px;
+}
+
+.auth-pane__subtitle {
+  margin-top: var(--space-1);
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+  color: var(--color-muted);
+}
+
+.auth-pane__subtitle strong {
+  font-weight: 600;
+  color: var(--color-strong);
+  font-variation-settings: 'opsz' 14;
+}
+
+/* ------------------------------------------------------------- controls -- */
+
+.field + .field {
+  margin-top: var(--space-5);
+}
+
+.field__label {
+  display: block;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  line-height: var(--leading-xs);
+  color: var(--color-label);
+  font-variation-settings: 'opsz' 14;
+}
+
+.field__control {
+  position: relative;
+  margin-top: var(--space-2);
+}
+
+.field__icon {
+  position: absolute;
+  top: 50%;
+  left: var(--space-4);
+  display: block;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.field__input {
+  display: block;
+  width: 100%;
+  height: var(--field-height);
+  padding: 0 15.701px 0 34.451px;
+  font-family: inherit;
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+  color: var(--color-body);
+  background-color: var(--color-field);
+  border: var(--field-border) solid var(--color-field-border);
+  border-radius: var(--radius-md);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.field__input--with-action {
+  padding-right: 38.201px;
+}
+
+.field__input::placeholder {
+  color: rgba(15, 23, 42, 0.5);
+}
+
+.field__input:focus {
+  background-color: var(--color-surface);
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 3px rgba(0, 82, 204, 0.12);
+  outline: none;
+}
+
+.field__input[aria-invalid='true'] {
+  border-color: var(--color-danger);
+}
+
+.field__toggle {
+  position: absolute;
+  top: 50%;
+  right: var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+.field__toggle img {
+  display: block;
+  width: var(--icon-size);
+  height: var(--icon-size);
+}
+
+.field__error {
+  margin-top: var(--space-1);
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+  color: var(--color-danger);
+}
+
+/* password requirement checklist (set-new-password screen) */
+
+.password-rules {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
+  padding: 11.951px;
+  list-style: none;
+  background-color: var(--color-info-bg);
+  border: var(--field-border) solid var(--color-info-border);
+  border-radius: var(--radius-md);
+}
+
+.password-rule {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+  color: var(--color-muted);
+  font-variation-settings: 'opsz' 9;
+}
+
+.password-rule__dot {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  background-color: var(--color-field-border);
+  border-radius: var(--radius-pill);
+}
+
+.password-rule__dot::before {
+  width: 5.618px;
+  height: 5.618px;
+  background-color: var(--color-subtle);
+  border-radius: var(--radius-pill);
+  content: '';
+}
+
+/* The design only specifies the unmet state; met rules reuse the same greens
+   the screen already uses for its lock badge. */
+.password-rule--met .password-rule__dot {
+  background-color: var(--color-icon-badge-green);
+}
+
+.password-rule--met .password-rule__dot::before {
+  background-color: var(--color-positive);
+}
+
+/* six single-character OTP boxes */
+
+.otp-inputs {
+  display: flex;
+  gap: 9.375px;
+  justify-content: center;
+  padding-top: var(--space-4);
+}
+
+.otp-input {
+  /* Holds the designed 41.242px everywhere it fits; only shrinks on very
+     narrow phones, where six fixed boxes would overflow the card. */
+  flex: 0 1 41.242px;
+  width: 41.242px;
+  min-width: 0;
+  height: 44.999px;
+  padding: 0;
+  font-family: inherit;
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--color-body);
+  text-align: center;
+  background-color: var(--color-field);
+  border: 1.402px solid var(--color-field-border);
+  border-radius: var(--radius-md);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+  font-variation-settings: 'opsz' 14;
+}
+
+.otp-input:focus {
+  background-color: var(--color-surface);
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 3px rgba(0, 82, 204, 0.12);
+  outline: none;
+}
+
+.otp-resend {
+  margin-top: var(--space-6);
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.otp-resend strong {
+  font-weight: 700;
+  color: var(--color-strong);
+  font-variation-settings: 'opsz' 14;
+}
+
+.otp-resend + .auth-submit {
+  margin-top: var(--space-6);
+}
+
+.auth-form__options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--space-5);
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  line-height: var(--leading-xs);
+  color: var(--color-label);
+  cursor: pointer;
+  font-variation-settings: 'opsz' 14;
+}
+
+.checkbox__box {
+  flex: none;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: var(--color-surface);
+  border: 1.402px solid var(--color-checkbox-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.checkbox__box:checked {
+  position: relative;
+  background-color: var(--color-brand);
+  border-color: var(--color-brand);
+}
+
+.checkbox__box:checked::after {
+  position: absolute;
+  top: 1.4px;
+  left: 4px;
+  width: 3.6px;
+  height: 7.2px;
+  border: solid #ffffff;
+  border-width: 0 1.6px 1.6px 0;
+  transform: rotate(45deg);
+  content: '';
+}
+
+.link-button {
+  padding: 0;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  line-height: var(--leading-xs);
+  color: var(--color-brand);
+  text-decoration: none;
+  background: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-variation-settings: 'opsz' 14;
+}
+
+.link-button:hover {
+  text-decoration: underline;
+}
+
+.auth-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  width: 100%;
+  height: 41.231px;
+  margin-top: var(--space-5);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  line-height: var(--leading-sm);
+  color: #ffffff;
+  background-color: var(--color-brand);
+  border: 0;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color 120ms ease, opacity 120ms ease;
+  font-variation-settings: 'opsz' 14;
+}
+
+.auth-submit:hover:not(:disabled) {
+  background-color: var(--color-brand-hover);
+}
+
+.auth-submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+/* Must follow :disabled — same specificity, busy wins while submitting. */
+.auth-submit[data-busy='true'] {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+.auth-submit img {
+  display: block;
+  width: var(--icon-size);
+  height: var(--icon-size);
+}
+
+.auth-alert {
+  margin-top: var(--space-4);
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+  color: var(--color-danger);
+}
+
+/* ------------------------------------------------------------ callouts -- */
+
+.demo-note {
+  margin-top: var(--space-7);
+  padding: 11.951px;
+  background-color: var(--color-note-bg);
+  border: var(--field-border) solid var(--color-note-border);
+  border-radius: var(--radius-md);
+}
+
+.demo-note__title {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  line-height: var(--leading-xs);
+  color: var(--color-note-title);
+  font-variation-settings: 'opsz' 14;
+}
+
+.demo-note__row {
+  margin-top: var(--space-1);
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+  color: var(--color-note-text);
+}
+
+.demo-note__row code {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+
+.info-note {
+  margin-top: var(--space-6);
+  padding: 11.951px;
+  background-color: var(--color-info-bg);
+  border: var(--field-border) solid var(--color-info-border);
+  border-radius: var(--radius-md);
+}
+
+.info-note__title {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  line-height: var(--leading-xs);
+  color: var(--color-info-text);
+  font-variation-settings: 'opsz' 14;
+}
+
+.info-note__text {
+  margin-top: var(--space-1);
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+  color: var(--color-info-text);
+}
+
+.info-note__text strong {
+  font-weight: 500;
+  font-variation-settings: 'opsz' 14;
+}
+
+.hint-note {
+  margin-top: 18.75px;
+  padding: 11.951px;
+  background-color: var(--color-hint-bg);
+  border: var(--field-border) solid var(--color-hint-border);
+  border-radius: var(--radius-md);
+}
+
+.hint-note__text {
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+  color: var(--color-hint-text);
+}
+
+.hint-note__text strong {
+  font-weight: 600;
+  font-variation-settings: 'opsz' 14;
+}
+
+.hint-note__text code {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+
+.auth-support {
+  margin-top: var(--space-6);
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+  color: var(--color-subtle);
+  text-align: center;
+}
+
+.auth-support strong {
+  font-weight: 500;
+  color: var(--color-label);
+  font-variation-settings: 'opsz' 14;
+}
+
+/* ----------------------------------------------------------- responsive -- */
+
+@media (max-width: 900px) {
+  .auth-card {
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .brand-panel {
+    flex: none;
+    width: 100%;
+  }
+
+  .auth-pane__head--login {
+    padding-top: 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .brand-panel,
+  .auth-pane {
+    padding: var(--space-6);
+  }
+
+  .brand-panel__headline {
+    font-size: var(--text-xl);
+    line-height: var(--leading-xl);
+  }
+
+  .brand-panel__stats {
+    margin-bottom: var(--space-6);
+    padding-top: var(--space-6);
+  }
+}

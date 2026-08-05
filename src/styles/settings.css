@@ -1,0 +1,579 @@
+/* Settings — the tab strip and the panel chrome behind it.
+
+   The page is one screen with nine panels rather than nine sidebar entries: an
+   admin comes here to configure something, not to work a queue, and a tab strip
+   keeps the whole surface visible at once. Everything below the strip is built
+   from the primitives in dashboard.css (.card, .table, .pill, .tag, .op-list) —
+   this file only adds what a tabbed page needs that a list screen does not.
+
+   Layout of this file:
+     tab strip -> panel head -> form in a card -> card search -> flush tables
+     -> permissions -> config groups -> responsive */
+
+/* ------------------------------------------------------------ tab strip -- */
+
+.settings-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+.settings-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 8.201px 14.99px;
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  line-height: var(--leading-sm);
+  color: var(--color-strong);
+  white-space: nowrap;
+  background-color: var(--color-surface);
+  border: var(--field-border) solid var(--color-dash-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.settings-tab:hover {
+  color: var(--color-body);
+  background-color: var(--color-dash-chip);
+  border-color: #cbd5e1;
+}
+
+.settings-tab svg {
+  flex: none;
+  opacity: 0.75;
+}
+
+/* Active runs E-Citizen blue rather than the admin's violet: the strip is a
+   control, and a control means the same thing in all three consoles. */
+.settings-tab--active,
+.settings-tab--active:hover {
+  color: #ffffff;
+  background-color: var(--color-brand);
+  border-color: var(--color-brand);
+  box-shadow: 0 6px 14px -8px rgba(0, 82, 204, 0.6);
+}
+
+.settings-tab--active svg {
+  opacity: 1;
+}
+
+/* ----------------------------------------------------------- panel head -- */
+
+.settings-panel {
+  margin-top: var(--space-6);
+}
+
+/* The panel supplies the offset, so a notice at the top of one must not add a
+   second — and the card beneath it has to be pushed clear itself. */
+.settings-panel .notice {
+  margin-top: 0;
+}
+
+.settings-panel .notice + .card,
+.settings-panel .notice + .config-group {
+  margin-top: 14.992px;
+}
+
+/* .notice is the green "saved" tone. An advisory is not an outcome, so it gets
+   the amber callout the auth screens already use for the same job. */
+.notice--info {
+  color: var(--color-hint-text);
+  background-color: var(--color-hint-bg);
+  border: var(--field-border) solid var(--color-hint-border);
+}
+
+/* The count belongs to the title — "Team Members (11)" — so it must never wrap
+   away from it or read as a separate figure. */
+.card__count {
+  font-weight: 600;
+  color: var(--color-subtle);
+}
+
+/* A card whose table runs to the border while its head and search stay inset. */
+.card--flush {
+  overflow: hidden;
+}
+
+.card__bleed {
+  margin: var(--space-5) -19.451px -19.451px;
+  border-top: var(--field-border) solid var(--color-dash-border);
+}
+
+/* ------------------------------------------------------- form in a card -- */
+
+/* AgentForm draws each of its sections as its own card, which is right when the
+   form owns the page. Inside a settings panel it is already in one, so the
+   sections flatten to plain rules and the panel stays a single surface. */
+.settings-panel .form {
+  margin-top: var(--space-5);
+}
+
+.settings-panel .form__lead {
+  margin-bottom: var(--space-6);
+}
+
+.settings-panel .form__group {
+  padding: var(--space-6) 0 0;
+  margin-bottom: 0;
+  background: none;
+  border-width: var(--field-border) 0 0;
+  border-radius: 0;
+}
+
+.settings-panel .form:first-of-type .form__group:first-of-type,
+.settings-panel .form__lead + .form__group {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.settings-panel .form__actions {
+  padding-top: var(--space-6);
+  padding-bottom: 0;
+}
+
+/* --------------------------------------------------------- card search -- */
+
+.settings-search {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+
+.settings-search__field {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  height: var(--field-height);
+  padding: 0 var(--space-4);
+  color: var(--color-dash-text);
+  background-color: var(--color-surface);
+  border: var(--field-border) solid var(--color-field-border);
+  border-radius: var(--radius-md);
+}
+
+.settings-search__field:focus-within {
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 2px rgba(0, 82, 204, 0.12);
+}
+
+.settings-search__field svg {
+  flex: none;
+}
+
+.settings-search__field input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  font-family: inherit;
+  font-size: var(--text-sm);
+  color: var(--color-body);
+  background: transparent;
+  border: 0;
+  outline: none;
+}
+
+.settings-search__field input::placeholder {
+  color: var(--color-placeholder-soft);
+}
+
+.settings-search .toolbar__select {
+  flex: none;
+  height: var(--field-height);
+  border-color: var(--color-field-border);
+}
+
+/* -------------------------------------------------------- flush tables -- */
+
+/* Row hover on a settings table is an affordance for the actions at its right
+   end, not a hint that the row itself navigates. */
+.card__bleed .table__row:hover {
+  background-color: var(--color-tile-soft);
+}
+
+.card__bleed .table {
+  min-width: 780px;
+}
+
+.table--team .table__head,
+.table--team .table__row,
+.table--agent-accounts .table__head,
+.table--agent-accounts .table__row {
+  grid-template-columns: 1.5fr 1.5fr 0.8fr 1fr 0.8fr 0.8fr 0.6fr;
+}
+
+.table--roles .table__head,
+.table--roles .table__row {
+  grid-template-columns: 1fr 0.9fr 2.2fr 0.6fr;
+}
+
+.table--permissions .table__head,
+.table--permissions .table__row {
+  grid-template-columns: 1.1fr 1.8fr 1fr 0.8fr;
+}
+
+/* The signed-in account, so nobody suspends themselves by mistake. */
+.person__self {
+  margin-left: var(--space-2);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-brand);
+}
+
+/* ------------------------------------------------ pick a person, then act -- */
+
+/* An operation row that acts in place rather than navigating. Same geometry as
+   the .op links beside it, so the list reads as one list. */
+.op--button {
+  width: 100%;
+  font: inherit;
+  text-align: left;
+  background: none;
+  border-width: var(--field-border) 0 0;
+  border-style: solid;
+  border-color: var(--color-dash-border);
+  cursor: pointer;
+}
+
+.pick-list {
+  margin-top: var(--space-5);
+  max-height: 280px;
+  overflow-y: auto;
+  list-style: none;
+  border: var(--field-border) solid var(--color-dash-border);
+  border-radius: var(--radius-md);
+}
+
+.pick {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  font: inherit;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-top: var(--field-border) solid var(--color-dash-border);
+  cursor: pointer;
+}
+
+.pick-list li:first-child .pick {
+  border-top: 0;
+}
+
+.pick:hover {
+  background-color: var(--color-tile-soft);
+}
+
+/* The chosen row stays obvious after the list scrolls away from it. */
+.pick--on {
+  background-color: rgba(0, 82, 204, 0.06);
+  box-shadow: inset 3px 0 0 var(--color-brand);
+}
+
+.pick__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.pick__name {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-body);
+}
+
+.pick__meta {
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+  color: var(--color-dash-text);
+}
+
+.pick-list__note {
+  margin-top: var(--space-5);
+  padding: var(--space-5);
+  font-size: var(--text-sm);
+  color: var(--color-dash-text);
+  text-align: center;
+  background-color: var(--color-tile-soft);
+  border-radius: var(--radius-md);
+}
+
+.pick-list__note--error {
+  color: var(--tone-red-text);
+  background-color: var(--tone-red-bg);
+}
+
+/* ------------------------------------------------------------ status form -- */
+
+.status-form {
+  padding-top: var(--space-6);
+  margin-top: var(--space-6);
+  border-top: var(--field-border) solid var(--color-dash-border);
+}
+
+.status-form__title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--color-body);
+}
+
+.status-form__id {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 400;
+  color: var(--color-subtle);
+}
+
+.status-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-3);
+  margin: var(--space-5) 0;
+}
+
+.status-option {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background-color: var(--color-surface);
+  border: var(--field-border) solid var(--color-field-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+
+.status-option:hover {
+  border-color: #cbd5e1;
+}
+
+.status-option--on {
+  background-color: rgba(0, 82, 204, 0.05);
+  border-color: var(--color-brand);
+}
+
+.status-option input {
+  margin-top: 3px;
+  accent-color: var(--color-brand);
+}
+
+.status-option__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.status-option__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Where the account is now, so any other choice reads as a move away from it. */
+.status-option__current {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-subtle);
+}
+
+.status-option__hint {
+  font-size: var(--text-xs);
+  line-height: var(--leading-sm);
+  color: var(--color-dash-text);
+}
+
+/* --------------------------------------------------------- permissions -- */
+
+.perm {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.perm__icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 29.995px;
+  height: 29.995px;
+  color: var(--color-brand-accent-text);
+  background-color: var(--color-brand-accent-soft);
+  border-radius: var(--radius-md);
+}
+
+/* A role wears the same tone as its chip elsewhere, so the four are told apart
+   by colour in the roles table and in a team row alike. */
+.perm__icon--violet {
+  color: var(--tone-violet-text);
+  background-color: var(--tone-violet-bg);
+}
+
+.perm__icon--blue {
+  color: var(--tone-blue-text);
+  background-color: var(--tone-blue-bg);
+}
+
+.perm__icon--slate {
+  color: var(--tone-slate-text);
+  background-color: var(--color-dash-chip);
+}
+
+.perm__icon--green {
+  color: var(--tone-green-text);
+  background-color: var(--tone-green-bg);
+}
+
+.perm__body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.perm__label {
+  font-weight: 500;
+  color: var(--color-body);
+}
+
+/* The stored value, so a permission can be matched to the JWT it appears in. */
+.perm__value {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+  color: var(--color-subtle);
+}
+
+/* Overlapped rather than spaced — the count matters more than the individuals,
+   and each avatar carries the full name in its title. */
+.perm__holders {
+  display: flex;
+  align-items: center;
+}
+
+.perm__holder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-right: -6px;
+  font-size: 9.75px;
+  font-weight: 600;
+  color: var(--color-brand);
+  background-color: rgba(0, 82, 204, 0.1);
+  border: 1.5px solid var(--color-surface);
+  border-radius: var(--radius-pill);
+  font-variation-settings: 'opsz' 14;
+}
+
+.perm__none {
+  font-size: var(--text-xs);
+  color: var(--color-subtle);
+}
+
+/* ------------------------------------------------------- config groups -- */
+
+.config-group + .config-group {
+  margin-top: 14.992px;
+}
+
+.config-list {
+  margin-top: var(--space-4);
+  list-style: none;
+}
+
+.config-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-4) 0;
+  border-top: var(--field-border) solid var(--color-dash-border);
+}
+
+.config-list li:first-child .config-row {
+  border-top: 0;
+}
+
+.config-row__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.config-row__label {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  line-height: var(--leading-sm);
+  color: var(--color-body);
+}
+
+/* The environment variable the value comes from — without it, "10 minutes" is
+   a number nobody can find again. */
+.config-row__source {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+  color: var(--color-subtle);
+}
+
+.config-row__value {
+  flex: none;
+  padding: 5.625px var(--space-4);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-strong);
+  text-align: right;
+  background-color: var(--color-dash-chip);
+  border-radius: var(--radius-pill);
+  font-variation-settings: 'opsz' 14;
+}
+
+/* ----------------------------------------------------------- responsive -- */
+
+@media (max-width: 760px) {
+  .settings-tabs {
+    flex-wrap: nowrap;
+    padding-bottom: var(--space-2);
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+
+  .settings-search {
+    flex-wrap: wrap;
+  }
+
+  .settings-search__field {
+    flex-basis: 100%;
+  }
+
+  .settings-search .toolbar__select {
+    flex: 1;
+  }
+
+  .config-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+
+  .config-row__value {
+    text-align: left;
+  }
+}

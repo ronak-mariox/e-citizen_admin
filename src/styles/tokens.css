@@ -1,0 +1,182 @@
+/* Design tokens for the E-Citizen admin console.
+
+   The foundation is the same one the agent panels use (agent-panel-1/src/styles
+   /tokens.css, taken from the Figma source at 0.75x — which is why the metrics
+   carry odd decimals; keep them as-is when matching the design).
+
+   What differs is the chrome. `--color-brand` stays E-Citizen blue so a primary
+   button, a link and a focus ring look identical in all three consoles, but the
+   sidebar and the auth brand panel run indigo/violet instead of navy/sky. That
+   is deliberate: an admin holds destructive powers an agent does not, and the
+   surrounding frame should say which console you are in before you read a word
+   of it. Everything tinted lives under "admin chrome" below — restaining the
+   console means editing that block and nothing else. */
+
+:root {
+  /* Brand — shared with the agent panels, unchanged */
+  --color-brand: #0052cc;
+  --color-brand-hover: #0046ad;
+
+  /* ------------------------------------------------------- admin chrome -- */
+
+  /* Indigo-950. The sidebar and the auth panel sit on this. */
+  --color-brand-panel: #1e1b4b;
+  /* Violet-500 — active nav bar, panel highlights, admin-only accents. */
+  --color-brand-accent: #8e51ff;
+  --color-brand-accent-soft: #ede9fe;
+  --color-brand-accent-text: #6e11b0;
+
+  /* Text on the indigo panel, light to dark. */
+  --color-panel-text: #c4b5fd;
+  --color-panel-body: #ddd6fe;
+  --color-panel-footer: #a78bfa;
+  --color-panel-tile: rgba(255, 255, 255, 0.1);
+  --color-panel-rule: rgba(255, 255, 255, 0.1);
+
+  /* Sidebar rail. */
+  --color-sidebar-link: #ddd6fe;
+  --color-sidebar-muted: #c4b5fd;
+  --color-sidebar-active-bg: rgba(255, 255, 255, 0.15);
+  --color-sidebar-active-bar: var(--color-brand-accent);
+  --color-sidebar-rule: rgba(255, 255, 255, 0.1);
+  --color-sidebar-section: rgba(196, 181, 253, 0.7);
+
+  /* Decorative blobs behind the auth panel. */
+  --color-panel-blob-soft: rgba(255, 255, 255, 0.05);
+  --color-panel-blob-accent: rgba(142, 81, 255, 0.18);
+
+  /* ------------------------------------------------------------ surfaces -- */
+
+  --color-page: #f8fafc;
+  --color-surface: #ffffff;
+  --color-field: #f9fafb;
+  --color-field-border: #e5e7eb;
+  --color-checkbox-border: #d1d5dc;
+
+  /* Text */
+  --color-heading: #101828;
+  --color-body: #0f172a;
+  --color-strong: #364153;
+  --color-label: #4a5565;
+  --color-muted: #6a7282;
+  --color-subtle: #99a1af;
+
+  /* Badge + seeded-credentials callout */
+  --color-badge-bg: #dbeafe;
+  --color-note-bg: #eff6ff;
+  --color-note-border: #dbeafe;
+  --color-note-title: #1447e6;
+  --color-note-text: #155dfc;
+
+  /* Neutral callout (forgot-password screen) */
+  --color-info-bg: #f8fafc;
+  --color-info-border: #e2e8f0;
+  --color-info-text: #45556c;
+
+  /* Amber dev-hint callout (OTP screen) */
+  --color-hint-bg: #fffbeb;
+  --color-hint-border: #fef3c6;
+  --color-hint-text: #bb4d00;
+
+  /* Icon badges */
+  --color-icon-badge-amber: #fef3c6;
+  --color-icon-badge-indigo: #e0e7ff;
+  --color-icon-badge-green: #dcfce7;
+
+  /* Feedback */
+  --color-danger: #d4351c;
+  --color-positive: #00a63e;
+  --color-negative: #fb2c36;
+
+  /* Dashboard chrome */
+  --color-dash-text: #64748b;
+  --color-dash-border: #e2e8f0;
+  --color-dash-chip: #f1f5f9;
+
+  /* Settings + tiles */
+  --color-tile-soft: rgba(241, 245, 249, 0.4);
+  --color-tile-faint: rgba(241, 245, 249, 0.3);
+  --color-logout: #e7000b;
+  --color-placeholder-soft: rgba(15, 23, 42, 0.5);
+  --color-pill-on-bg: #dcfce7;
+  --color-pill-on-text: #008236;
+  --color-alert-border: #fee685;
+  --color-alert-body: #e17100;
+
+  /* The admin nav is longer than an agent's, so the rail is a little wider. */
+  --sidebar-width: 254px;
+  --topbar-height: 52.489px;
+
+  /* Typography */
+  --font-sans: 'DM Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: Menlo, Consolas, 'SF Mono', 'Liberation Mono', monospace;
+
+  --text-xs: 11.25px;
+  --text-sm: 13.125px;
+  --text-md: 16.875px;
+  --text-lg: 18.75px;
+  --text-xl: 22.5px;
+  --text-2xl: 28.125px;
+
+  --leading-xs: 15px;
+  --leading-sm: 18.75px;
+  --leading-md: 21.094px;
+  --leading-lg: 26.25px;
+  --leading-xl: 30px;
+  --leading-2xl: 38.672px;
+
+  /* Radii */
+  --radius-sm: 3.75px;
+  --radius-badge: 15px;
+  --radius-md: 15.25px;
+  --radius-lg: 22.5px;
+  --radius-pill: 999px;
+
+  /* Spacing */
+  --space-1: 3.75px;
+  --space-2: 5.625px;
+  --space-3: 7.5px;
+  --space-4: 11.25px;
+  --space-5: 15px;
+  --space-6: 22.5px;
+  --space-7: 30px;
+  --space-8: 37.5px;
+  --space-9: 45px;
+
+  /* Component metrics */
+  --card-width: 840px;
+  --card-min-height: 600px;
+  --panel-width: 419.991px;
+  --field-height: 38.888px;
+  --field-border: 0.701px;
+  --icon-size: 14.992px;
+
+  --shadow-card: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+  /* ------------------------------------------------- status + priority -- */
+
+  /* Held as tokens rather than repeated per screen: the same application
+     status appears on the dashboard, in three list tables and on a detail
+     page, and they must not drift apart. */
+  --tone-blue-bg: #eff6ff;
+  --tone-blue-text: #1447e6;
+  --tone-blue-dot: #2b7fff;
+  --tone-amber-bg: #fffbeb;
+  --tone-amber-text: #bb4d00;
+  --tone-amber-dot: #fe9a00;
+  --tone-violet-bg: #eef2ff;
+  --tone-violet-text: #432dd7;
+  --tone-violet-dot: #615fff;
+  --tone-orange-bg: #fff7ed;
+  --tone-orange-text: #ca3500;
+  --tone-orange-dot: #ff6900;
+  --tone-green-bg: #dcfce7;
+  --tone-green-text: #008236;
+  --tone-green-dot: #00a63e;
+  --tone-red-bg: #fef2f2;
+  --tone-red-text: #c10007;
+  --tone-red-dot: #fb2c36;
+  --tone-slate-bg: #f8fafc;
+  --tone-slate-text: #45556c;
+  --tone-slate-dot: #90a1b9;
+}
