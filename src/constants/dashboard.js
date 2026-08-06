@@ -113,62 +113,9 @@ export const DEPARTMENT_LOAD = [
   { key: 'social-welfare', label: 'Social Welfare', value: 121, color: '#fe9a00' },
 ];
 
-export const RECENT_ACTIVITY = [
-  {
-    id: 'ev-1',
-    icon: 'agents',
-    accent: '#0052cc',
-    actor: 'Meera Nair',
-    action: 'forwarded an application to the department',
-    target: 'APP-2026-04182 · Encumbrance Certificate · Revenue',
-    time: '4m ago',
-  },
-  {
-    id: 'ev-2',
-    icon: 'wallet',
-    accent: '#8e51ff',
-    actor: 'System Administrator',
-    action: 'approved a wallet recharge of ₹25,000',
-    target: 'Agent E-REV-A1-0001 · UPI reference 4471938265',
-    time: '22m ago',
-  },
-  {
-    id: 'ev-3',
-    icon: 'alert',
-    accent: '#fb2c36',
-    actor: 'SLA monitor',
-    action: 'escalated 3 applications past their deadline',
-    target: 'Urban Development · Building Plan Approval',
-    time: '1h ago',
-  },
-  {
-    id: 'ev-4',
-    icon: 'services',
-    accent: '#00a63e',
-    actor: 'Priya Sharma',
-    action: 'published a new service',
-    target: 'Trade Licence Renewal · Revenue',
-    time: '2h ago',
-  },
-  {
-    id: 'ev-5',
-    icon: 'admins',
-    accent: '#615fff',
-    actor: 'System Administrator',
-    action: 'granted manage_settlements to an administrator',
-    target: 'Neha Bhatt · Finance Controller',
-    time: '3h ago',
-  },
-  {
-    id: 'ev-6',
-    icon: 'ban',
-    accent: '#ff6900',
-    actor: 'System Administrator',
-    action: 'suspended a citizen account',
-    target: 'Rakesh Yadav · repeated fraudulent uploads',
-    time: '5h ago',
-  },
-];
+/* The dashboard's Recent Activity fixture lived here. It now reads the audit
+   trail through /audit-logs — see DashboardPage — so there is nothing to keep
+   in step with it. */
 
 /** Things an admin should clear today, surfaced so they are not hunted for. */
 export const ATTENTION_ITEMS = [

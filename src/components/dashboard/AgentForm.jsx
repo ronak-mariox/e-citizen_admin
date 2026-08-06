@@ -155,6 +155,23 @@ export function AgentForm({ level, onSubmit, onCancel, saving = false }) {
           </label>
 
           <label className="field2">
+            <span className="field2__label">Email address *</span>
+            <input
+              className="field2__input"
+              type="email"
+              value={form.email}
+              maxLength={120}
+              placeholder="ravi.kumar@ecitizen.gov.in"
+              required
+              onChange={(event) => set('email', event.target.value)}
+            />
+            <span className="field2__hint">
+              Unique across staff. The agent can start a password reset with this instead of
+              their employee ID — the code still goes to the mobile above.
+            </span>
+          </label>
+
+          <label className="field2">
             <span className="field2__label">Temporary password *</span>
             <input
               className="field2__input"

@@ -6,6 +6,7 @@ import ListToolbar from '../components/dashboard/ListToolbar.jsx';
 import TableFooter from '../components/dashboard/TableFooter.jsx';
 import AgentForm from '../components/dashboard/AgentForm.jsx';
 import AgentLevelChoice from '../components/dashboard/AgentLevelChoice.jsx';
+import ConfirmDialog from '../components/dashboard/ConfirmDialog.jsx';
 import { StatusPill } from '../components/dashboard/StatusPill.jsx';
 import * as agentsApi from '../api/agents.js';
 import { getErrorMessage } from '../api/client.js';
@@ -54,6 +55,11 @@ export function AgentsPage() {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
   const [saved, setSaved] = useState(null);
+
+  /* The agent whose delete is waiting on a yes — the row itself, not an id, so
+     the dialog and the notice afterwards can name them. */
+  const [confirming, setConfirming] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   const [reloadToken, setReloadToken] = useState(0);
   const reload = () => setReloadToken((token) => token + 1);
@@ -146,6 +152,30 @@ export function AgentsPage() {
       setSaveError(getErrorMessage(error));
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    setSaveError(null);
+
+    try {
+      const agent = await agentsApi.deleteAgent(confirming._id);
+
+      // Says what actually happened rather than "deleted": the record is kept,
+      // and an admin who needs it back should ask rather than assume it is gone.
+      setSaved(
+        `${agent.fullName} (${agent.employeeId}) was removed from the roster. Their record is kept for the audit trail.`
+      );
+      setConfirming(null);
+      reload();
+    } catch (error) {
+      // On the page, not in a dialog that is closing — a refusal is something
+      // to read and act on.
+      setSaveError(getErrorMessage(error));
+      setConfirming(null);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -259,6 +289,15 @@ export function AgentsPage() {
           </p>
         )}
 
+        {/* A delete that was refused says so here rather than in the dialog it
+            just closed. */}
+        {saveError && (
+          <p className="notice notice--error" role="alert">
+            <Icon name="alert" size={15} />
+            {saveError}
+          </p>
+        )}
+
         <ListToolbar
           value={query}
           onChange={changeQuery}
@@ -364,12 +403,24 @@ export function AgentsPage() {
                         >
                           <Icon name="eye" size={15} />
                         </button>
-                        <button
+                        {/* <button
                           className="icon-button icon-button--danger"
                           type="button"
                           aria-label={`Suspend ${agent.fullName}`}
                         >
                           <Icon name="ban" size={15} />
+                        </button> */}
+                        <button
+                          className="icon-button icon-button--danger"
+                          type="button"
+                          aria-label={`Delete ${agent.fullName}`}
+                          onClick={() => {
+                            setSaved(null);
+                            setSaveError(null);
+                            setConfirming(agent);
+                          }}
+                        >
+                          <Icon name="trash" size={15} />
                         </button>
                       </span>
                     </div>
@@ -432,6 +483,21 @@ export function AgentsPage() {
             onPageChange={setPage}
           />
         </section>
+
+        {confirming && (
+          <ConfirmDialog
+            title={`Delete ${confirming.fullName}?`}
+            body={`${confirming.employeeId} is removed from the roster and signed out at once — they can no longer sign in or be assigned work.`}
+            /* Says plainly that this is a soft delete. Someone who expected the
+               record to be gone should know it is not, and someone who deleted
+               the wrong agent should know it can be put back. */
+            note="Their record is kept for the audit trail, and their employee ID stays theirs. Ask a developer if it needs to be restored."
+            confirmLabel="Delete agent"
+            busy={deleting}
+            onCancel={() => setConfirming(null)}
+            onConfirm={handleDelete}
+          />
+        )}
       </main>
     </DashboardLayout>
   );

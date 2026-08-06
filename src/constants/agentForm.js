@@ -88,6 +88,7 @@ export function emptyAgentForm() {
   return {
     fullName: '',
     mobile: '',
+    email: '',
     password: '',
     status: 'active',
     department: '',
@@ -112,6 +113,9 @@ export function buildAgentPayload(form, level) {
   return {
     fullName: form.fullName.trim(),
     mobile: form.mobile.trim(),
+    // Lowercased to match how the account stores it, so a duplicate typed in
+    // capitals is caught as one rather than opening a second account.
+    email: form.email.trim().toLowerCase(),
     password: form.password,
     role: findLevel(level).role,
     status: form.status,

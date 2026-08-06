@@ -73,4 +73,21 @@ export async function getAgent(agentId) {
   return response.data.data.agent;
 }
 
-export default { createAgent, listAgents, getAgent, updateAgentStatus };
+/**
+ * Remove an agent from the roster.
+ *
+ * A soft delete server-side: the record is kept — applications and the audit
+ * trail point at it — and the account is hidden and locked out instead. So it
+ * disappears from every list here, but nothing that referred to it breaks, and
+ * its employee ID is never handed to someone else.
+ *
+ * Returns the deleted agent, so a notice can name it without the caller holding
+ * on to the row it has just removed.
+ */
+export async function deleteAgent(agentId) {
+  const response = await client.delete(`/agents/${agentId}`);
+
+  return response.data.data.agent;
+}
+
+export default { createAgent, listAgents, getAgent, updateAgentStatus, deleteAgent };
