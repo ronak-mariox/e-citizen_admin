@@ -533,6 +533,62 @@
   color: var(--color-subtle);
 }
 
+/* A credential, once revealed — monospace and wrapping, because these are read
+   character by character and pasted somewhere else. */
+.config-secret {
+  padding: var(--space-3) var(--space-4);
+  margin: 0 0 var(--space-4);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: 1.6;
+  color: var(--color-strong);
+  word-break: break-all;
+  background-color: var(--color-dash-chip);
+  border-radius: var(--radius-md);
+}
+
+.config-secret--masked {
+  color: var(--color-subtle);
+  letter-spacing: 0.08em;
+}
+
+.config-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  margin-top: var(--space-4);
+  font-size: var(--text-xs);
+  line-height: var(--leading-sm);
+  color: var(--color-hint-text);
+  background-color: var(--color-hint-bg);
+  border: var(--field-border) solid var(--color-hint-border);
+  border-radius: var(--radius-md);
+}
+
+.config-warning svg {
+  flex: none;
+  margin-top: 1px;
+}
+
+.config-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--space-4);
+}
+
+/* The origins behind the "5 origins" count — indented under their row, which
+   is where someone checking a CORS problem expects to find them. */
+.config-sublist {
+  padding: 0 0 var(--space-4) var(--space-2);
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: 1.7;
+  color: var(--color-dash-text);
+  list-style: none;
+}
+
 .config-row__value {
   flex: none;
   padding: 5.625px var(--space-4);

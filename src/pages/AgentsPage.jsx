@@ -5,6 +5,7 @@ import Icon from '../components/dashboard/Icon.jsx';
 import ListToolbar from '../components/dashboard/ListToolbar.jsx';
 import TableFooter from '../components/dashboard/TableFooter.jsx';
 import AgentForm from '../components/dashboard/AgentForm.jsx';
+import AgentEditForm from '../components/dashboard/AgentEditForm.jsx';
 import AgentLevelChoice from '../components/dashboard/AgentLevelChoice.jsx';
 import ConfirmDialog from '../components/dashboard/ConfirmDialog.jsx';
 import { StatusPill } from '../components/dashboard/StatusPill.jsx';
@@ -52,6 +53,13 @@ export function AgentsPage() {
      rather than a boolean plus a level, so "creating, but no level yet" cannot
      be represented twice and drift apart. */
   const [creating, setCreating] = useState(null);
+
+  /* The agent being edited — the whole record, not the row: the list leaves out
+     their email and service scope, so the form is opened only once a fetch has
+     brought the rest back. `opening` is the row waiting on that fetch. */
+  const [editing, setEditing] = useState(null);
+  const [opening, setOpening] = useState(null);
+
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
   const [saved, setSaved] = useState(null);
@@ -155,6 +163,56 @@ export function AgentsPage() {
     }
   };
 
+  const openForEdit = async (agent) => {
+    setOpening(agent._id);
+    setSaved(null);
+    setSaveError(null);
+
+    try {
+      setEditing(await agentsApi.getAgent(agent._id));
+    } catch (error) {
+      setSaveError(getErrorMessage(error));
+    } finally {
+      setOpening(null);
+    }
+  };
+
+  /**
+   * Save an edit.
+   *
+   * Two calls when the status moved, because the API keeps status on its own
+   * route — it ends the agent's session and is audited differently. Details
+   * first: if the status change fails, the corrections are already saved, and
+   * the admin is told which half is outstanding rather than losing both.
+   */
+  const handleEditSubmit = async ({ details, status: statusChange }) => {
+    setSaving(true);
+    setSaveError(null);
+
+    try {
+      let agent = await agentsApi.updateAgent(editing._id, details);
+
+      if (statusChange) {
+        agent = await agentsApi.updateAgentStatus(editing._id, statusChange);
+      }
+
+      setSaved(
+        statusChange
+          ? `${agent.fullName} (${agent.employeeId}) was updated and is now ${agent.status}.`
+          : `${agent.fullName} (${agent.employeeId}) was updated.`
+      );
+      setEditing(null);
+
+      // The filters stay as they were — an edit is done from a list someone
+      // was looking at for a reason.
+      reload();
+    } catch (error) {
+      setSaveError(getErrorMessage(error));
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleDelete = async () => {
     setDeleting(true);
     setSaveError(null);
@@ -178,6 +236,57 @@ export function AgentsPage() {
       setDeleting(false);
     }
   };
+
+  /* Editing takes over the page for the same reason creating does — and it is
+     the same shell, so the two feel like one screen with two jobs. */
+  if (editing) {
+    return (
+      <DashboardLayout>
+        <main className="page">
+          <div className="page__head">
+            <div>
+              <h1 className="page__title">Edit {editing.fullName}</h1>
+              <p className="page__subtitle">
+                {editing.employeeId} · {editing.department?.name ?? 'No department'}
+              </p>
+            </div>
+
+            <div className="page__actions">
+              <button
+                className="btn"
+                type="button"
+                disabled={saving}
+                onClick={() => {
+                  setEditing(null);
+                  setSaveError(null);
+                }}
+              >
+                <Icon name="chevronLeft" size={14} />
+                Back to agents
+              </button>
+            </div>
+          </div>
+
+          {saveError && (
+            <p className="notice notice--error" role="alert">
+              <Icon name="alert" size={15} />
+              {saveError}
+            </p>
+          )}
+
+          <AgentEditForm
+            agent={editing}
+            saving={saving}
+            onSubmit={handleEditSubmit}
+            onCancel={() => {
+              setEditing(null);
+              setSaveError(null);
+            }}
+          />
+        </main>
+      </DashboardLayout>
+    );
+  }
 
   /* Creating takes over the page rather than opening a dialog: the form is
      three sections long, and a modal that tall is a scroll trap on a laptop.
@@ -399,9 +508,13 @@ export function AgentsPage() {
                         <button
                           className="icon-button"
                           type="button"
-                          aria-label={`View ${agent.fullName}`}
+                          aria-label={`Edit ${agent.fullName}`}
+                          disabled={opening === agent._id}
+                          onClick={() => openForEdit(agent)}
                         >
-                          <Icon name="eye" size={15} />
+                          {/* The row carries no email or service scope, so the
+                              form waits on the full record. */}
+                          <Icon name={opening === agent._id ? 'refresh' : 'edit'} size={15} />
                         </button>
                         {/* <button
                           className="icon-button icon-button--danger"

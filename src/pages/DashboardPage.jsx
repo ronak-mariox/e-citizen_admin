@@ -10,6 +10,7 @@ import ActivityFeed from '../components/dashboard/ActivityFeed.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import * as auditApi from '../api/audit.js';
 import { getErrorMessage } from '../api/client.js';
+import { displayName } from '../utils/format.js';
 import {
   ATTENTION_ITEMS,
   DEPARTMENT_LOAD,
@@ -89,7 +90,9 @@ export function DashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const firstName = user?.fullName?.split(' ')[0] ?? 'Administrator';
+  // A greeting is on first-name terms, so it takes the first word of whatever
+  // the rest of the shell is calling them.
+  const firstName = displayName(user).split(' ')[0];
 
   const [activity, setActivity] = useState([]);
   const [activityLoading, setActivityLoading] = useState(true);

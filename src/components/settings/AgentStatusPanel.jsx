@@ -230,7 +230,7 @@ export function AgentStatusPanel({ onBack }) {
                 value={reason}
                 maxLength={500}
                 rows={2}
-                placeholder="Why is this changing? Stored on the account."
+                placeholder="Enter the reason for this change"
                 onChange={(event) => setReason(event.target.value)}
               />
               <span className="field2__hint">

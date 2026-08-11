@@ -4,7 +4,7 @@ import Icon from './Icon.jsx';
 import { NAV_GROUPS } from '../../constants/navigation.js';
 import { BRAND } from '../../constants/brand.js';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { initialsOf } from '../../utils/format.js';
+import { displayName, initialsOf } from '../../utils/format.js';
 
 export function Sidebar({ collapsed, onToggle }) {
   const navigate = useNavigate();
@@ -71,10 +71,10 @@ export function Sidebar({ collapsed, onToggle }) {
 
       <div className="sidebar__foot">
         <span className="sidebar__avatar" aria-hidden="true">
-          {initialsOf(user?.fullName)}
+          {initialsOf(displayName(user))}
         </span>
         <span className="sidebar__identity">
-          <span className="sidebar__user">{user?.fullName ?? 'Administrator'}</span>
+          <span className="sidebar__user">{displayName(user)}</span>
           {/* Admin is the top role — there is no tier above it to distinguish
               here, so the line carries the designation instead. */}
           <span className="sidebar__role">{user?.designation || 'Admin'}</span>

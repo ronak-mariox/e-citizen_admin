@@ -61,6 +61,18 @@ export function AuthProvider({ children }) {
     loadUser();
   }, [endSession]);
 
+  /**
+   * Replaces the signed-in account after the profile screen saves it.
+   *
+   * The shell reads the name from here, so this is what repaints the sidebar
+   * and the top bar without a reload — and it writes through to storage, or a
+   * refresh would show the old name again until /auth/me answered.
+   */
+  const updateUser = useCallback((updated) => {
+    saveSession({ user: updated });
+    setUser(updated);
+  }, []);
+
   // Login
   const signIn = useCallback(async (credentials) => {
     try {
@@ -110,8 +122,9 @@ export function AuthProvider({ children }) {
       isAuthenticated: status === "authenticated",
       signIn,
       signOut,
+      updateUser,
     }),
-    [user, status, signIn, signOut]
+    [user, status, signIn, signOut, updateUser]
   );
 
   return (

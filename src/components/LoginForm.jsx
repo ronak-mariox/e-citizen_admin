@@ -92,7 +92,7 @@ export function LoginForm({ onSubmit }) {
               type="text"
               name="email"
               autoComplete="username"
-              placeholder={SEEDED_ACCOUNT.email}
+              placeholder="Enter your email address"
               value={email}
               onChange={(event) => setemail(event.target.value)}
               aria-invalid={Boolean(errors.email)}
@@ -118,7 +118,7 @@ export function LoginForm({ onSubmit }) {
               type={showPassword ? 'text' : 'password'}
               name="password"
               autoComplete="current-password"
-              placeholder="••••••••"
+              placeholder="Enter your password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               aria-invalid={Boolean(errors.password)}

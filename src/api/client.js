@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 import { clearSession, getAccessToken, saveSession } from '../utils/session.js';
+import { PANEL_ROLE } from '../constants/auth.js';
 
 /**
  * One axios instance for the whole app.
@@ -48,9 +49,20 @@ let refreshInFlight = null;
 
 function refreshAccessToken() {
   refreshInFlight ??= client
-    .post('/auth/refresh')
+    // `panel` picks this console's own refresh cookie. Cookies are scoped to a
+    // host and not to a port, so all three panels share one jar on localhost.
+    .post('/auth/refresh', { panel: PANEL_ROLE })
     .then((response) => {
       const { accessToken, user } = response.data.data;
+
+      /* A session that came back as another role is not this console's to hold.
+         It happened whenever two panels were signed in on localhost, and the
+         symptom was a 401 followed instantly by a 403 rather than anything that
+         named the cause. Rejecting here drops to the sign-in screen instead. */
+      if (user.role !== PANEL_ROLE) {
+        throw new Error('Refreshed into a session for another role');
+      }
+
       saveSession({ accessToken, user });
       return accessToken;
     })

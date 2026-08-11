@@ -50,6 +50,22 @@ export async function listAgents({ page, limit, search, role, status, department
 }
 
 /**
+ * Edit an agent's details — name, contact and service scope.
+ *
+ * Four fields are refused by the API rather than ignored: `employeeId`, `role`
+ * and `department`, because the first is built from the other two and is what
+ * the agent signs in with, and `status`, which has its own call below so the
+ * session is ended along with it.
+ *
+ * Returns the updated agent with its department and services populated.
+ */
+export async function updateAgent(agentId, payload) {
+  const response = await client.patch(`/agents/${agentId}`, payload);
+
+  return response.data.data.agent;
+}
+
+/**
  * Move an agent through the account lifecycle — suspend, reactivate, and the
  * rest of USER_STATUS.
  *
@@ -90,4 +106,11 @@ export async function deleteAgent(agentId) {
   return response.data.data.agent;
 }
 
-export default { createAgent, listAgents, getAgent, updateAgentStatus, deleteAgent };
+export default {
+  createAgent,
+  updateAgent,
+  listAgents,
+  getAgent,
+  updateAgentStatus,
+  deleteAgent,
+};

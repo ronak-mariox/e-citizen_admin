@@ -118,7 +118,7 @@ export function AgentForm({ level, onSubmit, onCancel, saving = false }) {
               className="field2__input"
               value={form.fullName}
               maxLength={120}
-              placeholder="Ravi Kumar"
+              placeholder="Enter the agent's full name"
               required
               onChange={(event) => set('fullName', event.target.value)}
             />
@@ -147,7 +147,7 @@ export function AgentForm({ level, onSubmit, onCancel, saving = false }) {
               value={form.mobile}
               maxLength={10}
               pattern={MOBILE_PATTERN}
-              placeholder="9876543210"
+              placeholder="Enter a 10-digit mobile number"
               required
               onChange={(event) => set('mobile', event.target.value)}
             />
@@ -161,7 +161,7 @@ export function AgentForm({ level, onSubmit, onCancel, saving = false }) {
               type="email"
               value={form.email}
               maxLength={120}
-              placeholder="ravi.kumar@ecitizen.gov.in"
+              placeholder="Enter the work email address"
               required
               onChange={(event) => set('email', event.target.value)}
             />

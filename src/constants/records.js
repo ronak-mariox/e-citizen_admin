@@ -177,7 +177,10 @@ export const DEPARTMENTS = [
   { id: 'dept-welfare', name: 'Social Welfare', code: 'SWL', head: 'Unassigned', status: 'draft' },
 ];
 
-/* `fee` is what the citizen is billed in whole rupees — the schema keeps it in
+/* No longer rendered anywhere — ServicesPage reads the catalogue from the API.
+   Kept only as a reference for the shape a service row takes.
+
+   `fee` is what the citizen is billed in whole rupees — the schema keeps it in
    paise (see backend/src/models/service.js), the console shows rupees. */
 export const SERVICES = [
   { id: 'svc-ec', name: 'Encumbrance Certificate', code: 'EC', department: 'dept-revenue', fee: 350, slaHours: 48, status: 'active' },

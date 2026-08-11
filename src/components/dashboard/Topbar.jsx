@@ -1,6 +1,9 @@
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 import Icon from './Icon.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { initialsOf } from '../../utils/format.js';
+import { displayName, initialsOf } from '../../utils/format.js';
 
 /** Long-form date, matching the chip the agent panels carry. */
 function today() {
@@ -12,7 +15,44 @@ function today() {
 }
 
 export function Topbar({ onOpenNav, unread = true }) {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  /* A menu that only closed on its own trigger would sit open behind whatever
+     was clicked next. Escape closes it too, because a dropdown opened by
+     keyboard has to be dismissable the same way. */
+  useEffect(() => {
+    if (!open) return undefined;
+
+    const onPointerDown = (event) => {
+      if (!menuRef.current?.contains(event.target)) setOpen(false);
+    };
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
+
+    document.addEventListener('mousedown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [open]);
+
+  const go = (to) => {
+    setOpen(false);
+    navigate(to);
+  };
+
+  const handleSignOut = async () => {
+    setOpen(false);
+    await signOut();
+    navigate('/login', { replace: true });
+  };
 
   return (
     <header className="topbar">
@@ -48,18 +88,69 @@ export function Topbar({ onOpenNav, unread = true }) {
           {unread && <span className="topbar__dot" aria-hidden="true" />}
         </button>
 
-        <button className="topbar__user" type="button">
-          <span className="avatar" aria-hidden="true">
-            {initialsOf(user?.fullName)}
-          </span>
-          <span className="topbar__identity">
-            <span className="topbar__username">{user?.fullName ?? 'Administrator'}</span>
-            {/* Admin is the top role — there is no tier above it to distinguish
-                here, so the line carries the designation instead. */}
-            <span className="topbar__role">{user?.designation || 'Admin'}</span>
-          </span>
-          <Icon name="chevronDown" size={15} />
-        </button>
+        <div className="topbar__account" ref={menuRef}>
+          <button
+            className="topbar__user"
+            type="button"
+            aria-haspopup="menu"
+            aria-expanded={open}
+            onClick={() => setOpen((current) => !current)}
+          >
+            {/* Both read the same name, so the initials in the circle always
+                match the words beside them. */}
+            <span className="avatar" aria-hidden="true">
+              {initialsOf(displayName(user))}
+            </span>
+            <span className="topbar__identity">
+              <span className="topbar__username">{displayName(user)}</span>
+              {/* Admin is the top role — there is no tier above it to
+                  distinguish here, so the line carries the designation. */}
+              <span className="topbar__role">{user?.designation || 'Admin'}</span>
+            </span>
+            <Icon name="chevronDown" size={15} />
+          </button>
+
+          {open && (
+            <div className="menu" role="menu">
+              {/* The email is the login identifier and the one thing the
+                  profile screen cannot change, so it is stated here instead. */}
+              <div className="menu__head">
+                <span className="menu__name">{displayName(user)}</span>
+                <span className="menu__meta">{user?.email}</span>
+              </div>
+
+              <button
+                className="menu__item"
+                type="button"
+                role="menuitem"
+                onClick={() => go('/profile')}
+              >
+                <Icon name="citizens" size={15} />
+                Profile
+              </button>
+
+              <button
+                className="menu__item"
+                type="button"
+                role="menuitem"
+                onClick={() => go('/settings')}
+              >
+                <Icon name="settings" size={15} />
+                Settings
+              </button>
+
+              <button
+                className="menu__item menu__item--danger"
+                type="button"
+                role="menuitem"
+                onClick={handleSignOut}
+              >
+                <Icon name="logout" size={15} />
+                Sign out
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );

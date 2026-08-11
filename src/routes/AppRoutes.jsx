@@ -8,6 +8,7 @@ import DepartmentsPage from '../pages/DepartmentsPage.jsx';
 import ServicesPage from '../pages/ServicesPage.jsx';
 import AuditLogPage from '../pages/AuditLogPage.jsx';
 import SettingsPage from '../pages/SettingsPage.jsx';
+import ProfilePage from '../pages/ProfilePage.jsx';
 import SectionPlaceholderPage from '../pages/SectionPlaceholderPage.jsx';
 import { NAV_ITEMS } from '../constants/navigation.js';
 
@@ -32,6 +33,9 @@ export function AppRoutes() {
       <Route path="/services" element={<ServicesPage />} />
       <Route path="/audit-log" element={<AuditLogPage />} />
       <Route path="/settings" element={<SettingsPage />} />
+      {/* Reached from the account menu in the top bar, not from the sidebar —
+          it is about you rather than about a section of the console. */}
+      <Route path="/profile" element={<ProfilePage />} />
 
       {/* Every other sidebar entry resolves to a placeholder, so the nav can be
           clicked through without dead links. */}

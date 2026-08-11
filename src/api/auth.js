@@ -1,4 +1,5 @@
 import { client } from './client.js';
+import { PANEL_ROLE } from '../constants/auth.js';
 
 /**
  * The admin auth endpoints, one function per backend route.
@@ -28,7 +29,7 @@ export async function login({ email, password }) {
 
 /** Swaps the refresh cookie for a fresh access token. */
 export async function refresh() {
-  const response = await client.post('/auth/refresh');
+  const response = await client.post('/auth/refresh', { panel: PANEL_ROLE });
 
   return response.data.data;
 }

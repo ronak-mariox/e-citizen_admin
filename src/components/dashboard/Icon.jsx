@@ -62,6 +62,18 @@ const PATHS = {
     'M14 11v6',
   ],
 
+  // form builder — a drag handle, and the same move from a keyboard
+  grip: [
+    'M9 5h.01',
+    'M9 12h.01',
+    'M9 19h.01',
+    'M15 5h.01',
+    'M15 12h.01',
+    'M15 19h.01',
+  ],
+  arrowUp: ['M12 19V5', 'm5 12 7-7 7 7'],
+  arrowDown: ['M12 5v14', 'm19 12-7 7-7-7'],
+
   // settings tabs
   key: ['m15.5 7.5 3 3L22 7l-3-3', 'm21 2-9.6 9.6', 'M7.5 22a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z'],
   sliders: ['M4 21v-7', 'M4 10V3', 'M12 21v-9', 'M12 8V3', 'M20 21v-5', 'M20 12V3', 'M2 14h4', 'M10 8h4', 'M18 16h4'],

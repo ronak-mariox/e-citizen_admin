@@ -41,6 +41,45 @@ export const STATUS_OPTIONS = [
   { value: 'pending', label: 'Pending — activate after onboarding' },
 ];
 
+/* On edit the whole lifecycle is available: suspending and reactivating are
+   exactly what an edit is for, and an account also goes back to pending during
+   re-onboarding, to inactive when someone leaves, and to blocked when the
+   reason is not administrative.
+
+   `note` is the consequence, because every one of these except `active` ends
+   the agent's session the moment it is saved — the API clears their refresh
+   token so they are signed out rather than left working until it expires. */
+export const EDIT_STATUS_OPTIONS = [
+  {
+    value: 'active',
+    label: 'Active — can sign in',
+    note: 'The account works normally.',
+  },
+  {
+    value: 'pending',
+    label: 'Pending — waiting on onboarding',
+    note: 'Signs the agent out. Use while paperwork is being collected.',
+  },
+  {
+    value: 'inactive',
+    label: 'Inactive — stood down',
+    note: 'Signs the agent out. For someone who has left, or a desk that is closed.',
+  },
+  {
+    value: 'suspended',
+    label: 'Suspended — access withheld',
+    note: 'Signs the agent out. An administrative hold that is meant to be lifted.',
+  },
+  {
+    value: 'blocked',
+    label: 'Blocked — access refused',
+    note: 'Signs the agent out. For a reason that is not administrative.',
+  },
+];
+
+export const statusNote = (value) =>
+  EDIT_STATUS_OPTIONS.find((option) => option.value === value)?.note ?? '';
+
 /** agentDocumentSchema.type — the government IDs plus onboarding paperwork. */
 export const DOCUMENT_OPTIONS = [
   { value: 'aadhaar', label: 'Aadhaar' },

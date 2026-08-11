@@ -78,7 +78,7 @@ export function DepartmentForm({ department, onSubmit, onCancel, saving = false 
                 className="field2__input"
                 value={form.name}
                 maxLength={NAME_MAX}
-                placeholder="Revenue"
+                placeholder="Enter the department name"
                 required
                 onChange={(event) => set('name', event.target.value)}
               />
@@ -106,7 +106,7 @@ export function DepartmentForm({ department, onSubmit, onCancel, saving = false 
                 value={form.code}
                 maxLength={CODE_MAX}
                 pattern={CODE_PATTERN}
-                placeholder="REV"
+                placeholder="Enter a 2–5 letter code"
                 required
                 autoCapitalize="characters"
                 spellCheck="false"
@@ -134,7 +134,7 @@ export function DepartmentForm({ department, onSubmit, onCancel, saving = false 
               value={form.description}
               maxLength={DESCRIPTION_MAX}
               rows={3}
-              placeholder="What this department is responsible for, in a sentence or two."
+              placeholder="Describe what this department is responsible for"
               onChange={(event) => set('description', event.target.value)}
             />
             <span className="field2__hint">Shown to citizens browsing the catalogue.</span>
@@ -157,7 +157,7 @@ export function DepartmentForm({ department, onSubmit, onCancel, saving = false 
               value={form.officeAddress}
               maxLength={ADDRESS_MAX}
               rows={2}
-              placeholder="Room 214, District Revenue Office, Bengaluru 560001"
+              placeholder="Enter the office address"
               onChange={(event) => set('officeAddress', event.target.value)}
             />
           </label>
@@ -169,7 +169,7 @@ export function DepartmentForm({ department, onSubmit, onCancel, saving = false 
               type="email"
               value={form.contactEmail}
               maxLength={EMAIL_MAX}
-              placeholder="revenue@ecitizen.gov.in"
+              placeholder="Enter the contact email address"
               onChange={(event) => set('contactEmail', event.target.value)}
             />
           </label>
@@ -181,7 +181,7 @@ export function DepartmentForm({ department, onSubmit, onCancel, saving = false 
               type="tel"
               value={form.contactPhone}
               maxLength={PHONE_MAX}
-              placeholder="080 2222 1100"
+              placeholder="Enter the contact phone number"
               onChange={(event) => set('contactPhone', event.target.value)}
             />
             <span className="field2__hint">A desk line, not a personal mobile.</span>
@@ -232,7 +232,7 @@ export function DepartmentForm({ department, onSubmit, onCancel, saving = false 
               className="field2__input"
               value={form.icon}
               maxLength={100}
-              placeholder="departments"
+              placeholder="Enter an icon key"
               onChange={(event) => set('icon', event.target.value)}
             />
             <span className="field2__hint">Optional — an icon key for the citizen app.</span>

@@ -79,7 +79,7 @@ export function ResetPasswordForm({ onSubmit }) {
               type={showPassword ? 'text' : 'password'}
               name="password"
               autoComplete="new-password"
-              placeholder={`At least ${MIN_PASSWORD_LENGTH} characters`}
+              placeholder={`Enter a new password (min ${MIN_PASSWORD_LENGTH} characters)`}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
             />
@@ -111,7 +111,7 @@ export function ResetPasswordForm({ onSubmit }) {
               type={showPassword ? 'text' : 'password'}
               name="confirmPassword"
               autoComplete="new-password"
-              placeholder="Re-enter new password"
+              placeholder="Re-enter your new password"
               value={confirm}
               onChange={(event) => setConfirm(event.target.value)}
             />

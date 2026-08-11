@@ -1,0 +1,428 @@
+/* The "create service" form builder.
+
+   Everything here sits inside the .form / .form__group / .field2 shell that
+   dashboard.css already owns — these rules add the pieces that shell has no
+   equivalent for: a draggable field card, an options table, a disclosure, and
+   the citizen-facing preview inside a wider modal. Tokens only, so the builder
+   restains with the rest of the console. */
+
+/* ------------------------------------------------------------- builder -- */
+
+.builder__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-5);
+}
+
+.builder__tally {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-xs);
+  color: var(--color-dash-text);
+}
+
+.builder__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+}
+
+.builder__actions {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-5);
+}
+
+/* Fields are laid out two-up rather than the three-up of .form__grid: they sit
+   inside a card that is already indented, and three columns of 13px inputs in
+   there is a wall. */
+.builder__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-5);
+  margin-top: var(--space-4);
+}
+
+/* A block child that should span it — .field2--full only works inside a grid,
+   and the blocks are flex columns aligned to the start. */
+.builder__wide {
+  width: 100%;
+}
+
+/* A sub-section of a field card — options, validation, visibility. */
+.builder__block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  margin-top: var(--space-4);
+  border-top: var(--field-border) solid var(--color-dash-border);
+}
+
+.builder__block-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.builder__block-title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-body);
+}
+
+.builder__block-hint,
+.builder__block-empty {
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+  color: var(--color-dash-text);
+}
+
+/* What the schema cannot store for this field type, and where it lives instead. */
+.builder__note {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  margin-top: var(--space-4);
+  font-size: var(--text-xs);
+  line-height: var(--leading-sm);
+  color: var(--color-hint-text);
+  background-color: var(--color-hint-bg);
+  border: var(--field-border) solid var(--color-hint-border);
+  border-radius: var(--radius-md);
+}
+
+.builder__disclosure {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-strong);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.builder__disclosure:hover {
+  color: var(--color-brand);
+}
+
+/* How many rules are set behind a collapsed disclosure. */
+.builder__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  padding: 0 var(--space-2);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--color-brand);
+  background-color: rgba(0, 82, 204, 0.1);
+  border-radius: var(--radius-pill);
+}
+
+/* ------------------------------------------------------- fee breakdown -- */
+
+/* The totalFee virtual, shown while it is being decided rather than after. */
+.fee-summary {
+  max-width: 320px;
+  padding: var(--space-4) var(--space-5);
+  margin-top: var(--space-5);
+  margin-left: auto;
+  background-color: var(--color-tile-soft);
+  border: var(--field-border) solid var(--color-dash-border);
+  border-radius: var(--radius-md);
+}
+
+.fee-summary__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-5);
+  padding: var(--space-1) 0;
+  font-size: var(--text-xs);
+  color: var(--color-dash-text);
+}
+
+.fee-summary__row--total {
+  padding-top: var(--space-3);
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--color-body);
+  border-top: var(--field-border) solid var(--color-dash-border);
+}
+
+/* Charged, but not to the citizen — the platform settles it. */
+.fee-summary__struck {
+  color: var(--color-subtle);
+  text-decoration: line-through;
+}
+
+/* ---------------------------------------------------------- field card -- */
+
+.field-card {
+  background-color: var(--color-surface);
+  border: var(--field-border) solid var(--color-dash-border);
+  border-radius: var(--radius-md);
+}
+
+.field-card--dragging {
+  opacity: 0.6;
+}
+
+/* Where the dragged card would land. */
+.field-card--over {
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 2px rgba(0, 82, 204, 0.12);
+}
+
+.field-card--invalid {
+  border-color: var(--tone-red-dot);
+}
+
+.field-card__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+}
+
+.field-card__grip {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 26.25px;
+  color: var(--color-subtle);
+  cursor: grab;
+}
+
+.field-card__grip:active {
+  cursor: grabbing;
+}
+
+/* The whole summary line opens the card — a 15px chevron is a small target for
+   something clicked this often. */
+.field-card__summary {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-2) 0;
+  font-size: var(--text-sm);
+  text-align: left;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.field-card__order {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-subtle);
+}
+
+.field-card__label {
+  overflow: hidden;
+  font-weight: 600;
+  color: var(--color-body);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Pushes the chevron to the far edge, past the tags. */
+.field-card__summary > svg:last-child {
+  margin-left: auto;
+  color: var(--color-subtle);
+}
+
+.field-card__body {
+  padding: 0 var(--space-5) var(--space-5);
+}
+
+.field-card__check {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--color-strong);
+  cursor: pointer;
+}
+
+.field-card__check input {
+  flex: none;
+  width: 15px;
+  height: 15px;
+  accent-color: var(--color-brand);
+}
+
+/* --------------------------------------------------------- option rows -- */
+
+.option-row {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) minmax(0, 1fr) 26.25px;
+  gap: var(--space-3);
+  align-items: end;
+  width: 100%;
+}
+
+.option-row__index {
+  padding-bottom: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-subtle);
+}
+
+.option-row .icon-button {
+  margin-bottom: 1px;
+}
+
+/* An empty state inside a card rather than inside a table. */
+.empty--inset {
+  padding: var(--space-7) var(--space-6);
+  margin-top: var(--space-5);
+  background-color: var(--color-tile-soft);
+  border: var(--field-border) dashed var(--color-dash-border);
+  border-radius: var(--radius-md);
+}
+
+/* ------------------------------------------------------------- preview -- */
+
+.modal__card--wide {
+  display: flex;
+  flex-direction: column;
+  max-width: 560px;
+  max-height: 88vh;
+  padding: 0;
+  text-align: left;
+}
+
+.preview__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-5);
+  padding: var(--space-6);
+  border-bottom: var(--field-border) solid var(--color-dash-border);
+}
+
+.preview__lead {
+  margin-top: var(--space-1);
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+  color: var(--color-dash-text);
+}
+
+.preview__body {
+  flex: 1;
+  padding: var(--space-6);
+  overflow-y: auto;
+  background-color: var(--color-page);
+}
+
+.preview__section {
+  padding: var(--space-5);
+  margin-bottom: var(--space-4);
+  background-color: var(--color-surface);
+  border: var(--field-border) solid var(--color-dash-border);
+  border-radius: var(--radius-md);
+}
+
+.preview__section-title {
+  margin-bottom: var(--space-4);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--color-body);
+}
+
+.preview__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.preview__field + .preview__field {
+  margin-top: var(--space-5);
+}
+
+.preview__radios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.preview__radio {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-strong);
+  cursor: pointer;
+}
+
+.preview__radio input {
+  accent-color: var(--color-brand);
+}
+
+/* The upload control as the citizen app draws it — a target, not an input. */
+.preview__file {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  font-size: var(--text-sm);
+  color: var(--color-dash-text);
+  background-color: var(--color-field);
+  border: var(--field-border) dashed var(--color-checkbox-border);
+  border-radius: var(--radius-md);
+}
+
+.preview__file-rules {
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+  color: var(--color-subtle);
+  text-align: center;
+}
+
+.preview__hidden {
+  font-size: var(--text-xs);
+  line-height: var(--leading-sm);
+  color: var(--color-dash-text);
+  text-align: center;
+}
+
+.preview__foot {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-6);
+  border-top: var(--field-border) solid var(--color-dash-border);
+}
+
+.preview__foot .btn {
+  flex: 1;
+  justify-content: center;
+}
+
+@media (max-width: 720px) {
+  .builder__grid,
+  .option-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .option-row__index {
+    display: none;
+  }
+}

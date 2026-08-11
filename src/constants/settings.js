@@ -27,16 +27,6 @@ export const SETTINGS_TABS = [
     icon: 'admins',
   },
   {
-    id: 'agent-actions',
-    label: 'Agent Management',
-    icon: 'shield',
-  },
-  {
-    id: 'citizens',
-    label: 'Citizen Management',
-    icon: 'citizens',
-  },
-  {
     id: 'roles',
     label: 'Roles & Permissions',
     icon: 'key',
@@ -253,45 +243,3 @@ export const PERMISSION_CATALOG = [
     section: 'Settings & Audit Log',
   },
 ];
-
-/* --------------------------------------------------------- system config -- */
-
-/* Mirrors backend/src/config/env.js. Every value here is set in the API's
-   environment and read at boot, so the panel shows them and names the variable
-   rather than pretending they are editable from a browser. */
-export const SYSTEM_CONFIG_GROUPS = [
-  {
-    id: 'sessions',
-    title: 'Sessions & tokens',
-    hint: 'A session is a short access token plus a rotating refresh cookie.',
-    rows: [
-      { label: 'Access token lifetime', value: '15 minutes', source: 'JWT_ACCESS_TTL' },
-      { label: 'Refresh token lifetime', value: '30 days', source: 'JWT_REFRESH_TTL' },
-      { label: 'Password-reset token lifetime', value: '10 minutes', source: 'JWT_RESET_TTL' },
-      { label: 'Refresh cookie', value: 'httpOnly · rotated on every refresh', source: 'REFRESH_COOKIE_NAME' },
-    ],
-  },
-  {
-    id: 'otp',
-    title: 'One-time passwords',
-    hint: 'Citizen sign-in and staff password reset. Codes live in Redis, never in Mongo.',
-    rows: [
-      { label: 'Code length', value: '6 digits', source: 'env.otp.length' },
-      { label: 'Validity', value: '10 minutes', source: 'OTP_TTL_MINUTES' },
-      { label: 'Maximum attempts', value: '5 per code', source: 'OTP_MAX_ATTEMPTS' },
-      { label: 'Resend cooldown', value: '30 seconds', source: 'OTP_RESEND_COOLDOWN_SECONDS' },
-    ],
-  },
-  {
-    id: 'platform',
-    title: 'Platform',
-    hint: 'Where this console is talking to, and what is behind it.',
-    rows: [
-      { label: 'API prefix', value: '/api/v1', source: 'API_PREFIX' },
-      { label: 'Database', value: 'MongoDB · e-citizen', source: 'MONGODB_URI' },
-      { label: 'OTP store', value: 'Redis · key prefix ecitizen:', source: 'REDIS_URL' },
-      { label: 'Allowed origins', value: 'The five panel dev servers', source: 'CORS_ORIGINS' },
-    ],
-  },
-];
-

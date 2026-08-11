@@ -66,7 +66,7 @@ export function ForgotPasswordForm({ onSubmit }) {
               type="text"
               name="employeeId"
               autoComplete="username"
-              placeholder="ECZ-AD-0001"
+              placeholder="Enter your employee ID"
               value={employeeId}
               onChange={(event) => setEmployeeId(event.target.value)}
             />
