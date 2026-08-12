@@ -4,6 +4,7 @@ import DashboardLayout from '../layouts/DashboardLayout.jsx';
 import Icon from '../components/dashboard/Icon.jsx';
 import ListToolbar from '../components/dashboard/ListToolbar.jsx';
 import TableFooter from '../components/dashboard/TableFooter.jsx';
+import PageBack from '../components/dashboard/PageBack.jsx';
 import AgentForm from '../components/dashboard/AgentForm.jsx';
 import AgentEditForm from '../components/dashboard/AgentEditForm.jsx';
 import AgentLevelChoice from '../components/dashboard/AgentLevelChoice.jsx';
@@ -25,8 +26,6 @@ import { initialsOf } from '../utils/format.js';
 const STATUS_FILTERS = [
   { key: 'all', label: 'All' },
   { key: 'active', label: 'Active' },
-  { key: 'pending', label: 'Pending' },
-  { key: 'suspended', label: 'Suspended' },
   { key: 'inactive', label: 'Inactive' },
 ];
 
@@ -245,25 +244,19 @@ export function AgentsPage() {
         <main className="page">
           <div className="page__head">
             <div>
-              <h1 className="page__title">Edit {editing.fullName}</h1>
-              <p className="page__subtitle">
-                {editing.employeeId} · {editing.department?.name ?? 'No department'}
-              </p>
-            </div>
-
-            <div className="page__actions">
-              <button
-                className="btn"
-                type="button"
+              <PageBack
+                label="Back to agents"
                 disabled={saving}
                 onClick={() => {
                   setEditing(null);
                   setSaveError(null);
                 }}
-              >
-                <Icon name="chevronLeft" size={14} />
-                Back to agents
-              </button>
+              />
+
+              <h1 className="page__title">Edit {editing.fullName}</h1>
+              <p className="page__subtitle">
+                {editing.employeeId} · {editing.department?.name ?? 'No department'}
+              </p>
             </div>
           </div>
 
@@ -299,6 +292,15 @@ export function AgentsPage() {
         <main className="page">
           <div className="page__head">
             <div>
+              <PageBack
+                label={chosen ? 'Change level' : 'Back to roster'}
+                disabled={saving}
+                onClick={() => {
+                  setCreating(chosen ? 'choose' : null);
+                  setSaveError(null);
+                }}
+              />
+
               <h1 className="page__title">
                 {chosen ? `Create ${chosen.label}` : 'Create an agent'}
               </h1>
@@ -307,21 +309,6 @@ export function AgentsPage() {
                   ? chosen.duties
                   : 'The login account only — an agent completes their own profile after the first sign-in'}
               </p>
-            </div>
-
-            <div className="page__actions">
-              <button
-                className="btn"
-                type="button"
-                disabled={saving}
-                onClick={() => {
-                  setCreating(chosen ? 'choose' : null);
-                  setSaveError(null);
-                }}
-              >
-                <Icon name="chevronLeft" size={14} />
-                {chosen ? 'Change level' : 'Back to roster'}
-              </button>
             </div>
           </div>
 

@@ -4,6 +4,7 @@ import DashboardLayout from '../layouts/DashboardLayout.jsx';
 import Icon from '../components/dashboard/Icon.jsx';
 import ListToolbar from '../components/dashboard/ListToolbar.jsx';
 import TableFooter from '../components/dashboard/TableFooter.jsx';
+import PageBack from '../components/dashboard/PageBack.jsx';
 import DepartmentForm from '../components/dashboard/DepartmentForm.jsx';
 import ConfirmDialog from '../components/dashboard/ConfirmDialog.jsx';
 import { StatusPill } from '../components/dashboard/StatusPill.jsx';
@@ -24,9 +25,7 @@ import { catalogStatus } from '../constants/statusTone.js';
 const STATUS_FILTERS = [
   { key: 'all', label: 'All' },
   { key: 'active', label: 'Active' },
-  { key: 'draft', label: 'Draft' },
   { key: 'inactive', label: 'Inactive' },
-  { key: 'archived', label: 'Archived' },
 ];
 
 const SEARCH_DEBOUNCE_MS = 300;
@@ -185,19 +184,14 @@ export function DepartmentsPage() {
         <main className="page">
           <div className="page__head">
             <div>
+              <PageBack label="Back to departments" disabled={saving} onClick={closeForm} />
+
               <h1 className="page__title">{isNew ? 'Add a department' : `Edit ${editing.name}`}</h1>
               <p className="page__subtitle">
                 {isNew
                   ? 'Services hang off a department and agents are posted to one, so this comes first'
                   : `${editing.serviceCount} service${editing.serviceCount === 1 ? '' : 's'} and ${editing.agentCount} agent${editing.agentCount === 1 ? '' : 's'} depend on this record`}
               </p>
-            </div>
-
-            <div className="page__actions">
-              <button className="btn" type="button" disabled={saving} onClick={closeForm}>
-                <Icon name="chevronLeft" size={14} />
-                Back to departments
-              </button>
             </div>
           </div>
 
@@ -434,7 +428,7 @@ export function DepartmentsPage() {
                     confirming.serviceCount === 1 ? '' : 's'
                   } and ${confirming.agentCount} agent${
                     confirming.agentCount === 1 ? '' : 's'
-                  } attached, so this will be refused. Move them elsewhere, or set the department to Archived instead.`
+                  } attached, so this will be refused. Move them elsewhere, or set the department to Inactive instead.`
                 : undefined
             }
             confirmLabel="Yes, delete it"

@@ -16,11 +16,11 @@ import {
    does it: the two selects are the only things that need them, and a parent
    that fetched on their behalf would have to be told when they changed.
 
-   Archived departments are not offered — a service cannot be filed with a
-   department that has been retired. Draft ones are, and say so: a catalogue is
-   often built out before the department opens. */
+   Only active departments are offered — the API refuses a service filed under
+   an inactive one, so listing them would be listing a choice that cannot be
+   saved. */
 
-const isUsable = (department) => department.status !== 'archived';
+const isUsable = (department) => department.status === 'active';
 
 export function ServiceBasicInfo({ form, onChange }) {
   const [departments, setDepartments] = useState([]);
@@ -132,7 +132,6 @@ export function ServiceBasicInfo({ form, onChange }) {
             {departments.map((department) => (
               <option value={department._id} key={department._id}>
                 {department.name} ({department.code})
-                {department.status === 'draft' ? ' — draft' : ''}
               </option>
             ))}
           </select>

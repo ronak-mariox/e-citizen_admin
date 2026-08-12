@@ -28,8 +28,8 @@ export const CODE_MAX = 5;
 /* CATALOG_STATUS, minus the two that are outcomes rather than starting points —
    nothing is created inactive, and nothing is created archived. */
 export const STATUS_OPTIONS = [
-  { value: 'draft', label: 'Draft — set it up now, open it later' },
   { value: 'active', label: 'Active — services and agents can be added straight away' },
+  { value: 'inactive', label: 'Inactive — set it up now, open it later' },
 ];
 
 /**
@@ -47,10 +47,8 @@ export const slugPreview = (name) =>
 /* On edit the whole lifecycle is available — deactivating and archiving are
    exactly what an edit is for, they are just not ways to open a department. */
 export const EDIT_STATUS_OPTIONS = [
-  { value: 'draft', label: 'Draft — not visible to citizens' },
   { value: 'active', label: 'Active — open for applications' },
-  { value: 'inactive', label: 'Inactive — temporarily closed' },
-  { value: 'archived', label: 'Archived — retired, kept for history' },
+  { value: 'inactive', label: 'Inactive — not visible to citizens' },
 ];
 
 export function emptyDepartmentForm() {
@@ -61,7 +59,7 @@ export function emptyDepartmentForm() {
     officeAddress: '',
     contactEmail: '',
     contactPhone: '',
-    status: 'draft',
+    status: 'active',
     displayOrder: '0',
     icon: '',
   };
@@ -76,7 +74,7 @@ export function departmentToForm(department) {
     officeAddress: department.officeAddress ?? '',
     contactEmail: department.contactEmail ?? '',
     contactPhone: department.contactPhone ?? '',
-    status: department.status ?? 'draft',
+    status: department.status ?? 'active',
     displayOrder: String(department.displayOrder ?? 0),
     icon: department.icon ?? '',
   };

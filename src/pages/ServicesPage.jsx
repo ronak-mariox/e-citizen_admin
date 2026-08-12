@@ -4,6 +4,7 @@ import DashboardLayout from '../layouts/DashboardLayout.jsx';
 import Icon from '../components/dashboard/Icon.jsx';
 import ListToolbar from '../components/dashboard/ListToolbar.jsx';
 import TableFooter from '../components/dashboard/TableFooter.jsx';
+import PageBack from '../components/dashboard/PageBack.jsx';
 import ServiceForm from '../components/service/ServiceForm.jsx';
 import ConfirmDialog from '../components/dashboard/ConfirmDialog.jsx';
 import { StatusPill } from '../components/dashboard/StatusPill.jsx';
@@ -30,9 +31,7 @@ import '../styles/service-builder.css';
 const STATUS_FILTERS = [
   { key: 'all', label: 'All' },
   { key: 'active', label: 'Active' },
-  { key: 'draft', label: 'Draft' },
   { key: 'inactive', label: 'Inactive' },
-  { key: 'archived', label: 'Archived' },
 ];
 
 const SEARCH_DEBOUNCE_MS = 300;
@@ -280,19 +279,14 @@ export function ServicesPage() {
         <main className="page">
           <div className="page__head">
             <div>
+              <PageBack label="Back to services" disabled={saving} onClick={closeForm} />
+
               <h1 className="page__title">{isNew ? 'Create service' : `Edit ${editing.name}`}</h1>
               <p className="page__subtitle">
                 {isNew
                   ? 'The service, and the form a citizen fills in to apply for it — both saved as one record'
                   : 'Renaming is safe; changing a field key is not — answers already stored under the old one are orphaned'}
               </p>
-            </div>
-
-            <div className="page__actions">
-              <button className="btn" type="button" disabled={saving} onClick={closeForm}>
-                <Icon name="chevronLeft" size={14} />
-                Back to services
-              </button>
             </div>
           </div>
 
@@ -543,7 +537,7 @@ export function ServicesPage() {
               confirming.stats?.totalApplications
                 ? `${confirming.stats.totalApplications} application${
                     confirming.stats.totalApplications === 1 ? ' has' : 's have'
-                  } been filed against it, so this will be refused. Set the service to Archived instead — the applications need it to stay readable.`
+                  } been filed against it, so this will be refused. Set the service to Inactive instead — the applications need it to stay readable.`
                 : 'Citizens lose sight of it immediately. Archive it instead if it may come back.'
             }
             confirmLabel="Yes, delete it"

@@ -81,8 +81,11 @@ function PreviewInput({ field, value, onChange }) {
           {...common}
           type="tel"
           inputMode="numeric"
+          maxLength={10}
           value={value ?? ''}
-          onChange={(event) => onChange(event.target.value)}
+          // Digits only, the same as the citizen app — a preview that accepts
+          // what the real form refuses is not showing the real form.
+          onChange={(event) => onChange(event.target.value.replace(/\D/g, ''))}
         />
       );
 

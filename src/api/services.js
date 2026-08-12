@@ -95,7 +95,7 @@ export async function updateService(serviceId, payload) {
  *
  * Refused with a 409 once applications have been filed against it — the message
  * says how many. A service with history is archived through
- * `updateService({ status: 'archived' })` instead.
+ * `updateService({ status: 'inactive' })` instead.
  */
 export async function deleteService(serviceId) {
   const response = await client.delete(`/services/${serviceId}`);

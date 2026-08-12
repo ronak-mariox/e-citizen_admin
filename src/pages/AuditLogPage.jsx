@@ -14,9 +14,10 @@ import { initialsOf } from '../utils/format.js';
    question already formed — "who suspended that agent", "when was this account
    created" — and answering it means scanning one column, not reading prose.
 
-   Rows come from the API. Only agent operations are recorded so far; the areas
-   filter is built from whatever the trail actually contains, so a section that
-   starts recording later appears in it without this screen changing. */
+   Rows come from the API, written by the services that make each change —
+   admins, agents and citizens alike, so a sign-in, a profile edit and a deleted
+   service all land in the same trail. The area filter is built from the areas
+   that actually appear, so a section added later needs nothing here. */
 
 /** `severity` is how serious the change was; the colour is this screen's choice. */
 const SEVERITY_TONE = {

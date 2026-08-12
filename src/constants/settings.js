@@ -101,16 +101,13 @@ export const AGENT_LEVEL_FILTERS = [
 export const ACCOUNT_STATUS_FILTERS = [
   { value: 'all', label: 'All statuses' },
   { value: 'active', label: 'Active' },
-  { value: 'pending', label: 'Pending' },
-  { value: 'suspended', label: 'Suspended' },
   { value: 'inactive', label: 'Inactive' },
 ];
 
-/* The whole account lifecycle — USER_STATUS in backend/src/constants/statuses.js.
-   Every one is offered when changing a status, not just the suspend/reactivate
-   pair, because an account also goes back to pending during re-onboarding and to
-   inactive when someone leaves. `consequence` is what the admin is actually
-   deciding, which the one-word label does not say. */
+/* USER_STATUS in backend/src/constants/statuses.js — two states, because an
+   account either works or it does not. Why it does not is the reason stored
+   with the change. `consequence` is what the admin is actually deciding, which
+   the one-word label does not say. */
 export const ACCOUNT_STATUS_OPTIONS = [
   {
     value: 'active',
@@ -119,28 +116,10 @@ export const ACCOUNT_STATUS_OPTIONS = [
     consequence: 'Can sign in and be assigned applications.',
   },
   {
-    value: 'pending',
-    label: 'Pending',
-    tone: 'amber',
-    consequence: 'Cannot sign in yet. For an account still being onboarded.',
-  },
-  {
-    value: 'suspended',
-    label: 'Suspended',
-    tone: 'orange',
-    consequence: 'Signed out immediately and blocked from signing in. Reversible.',
-  },
-  {
     value: 'inactive',
     label: 'Inactive',
     tone: 'slate',
-    consequence: 'Signed out and stood down. For someone who has left the role.',
-  },
-  {
-    value: 'blocked',
-    label: 'Blocked',
-    tone: 'red',
-    consequence: 'Signed out and barred. For misconduct rather than administration.',
+    consequence: 'Signed out immediately and refused at sign-in. Reversible.',
   },
 ];
 

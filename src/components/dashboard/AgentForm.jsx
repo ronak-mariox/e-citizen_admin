@@ -12,6 +12,7 @@ import {
   previewEmployeeId,
 } from '../../constants/agentForm.js';
 import * as departmentsApi from '../../api/departments.js';
+import * as servicesApi from '../../api/services.js';
 import { getErrorMessage } from '../../api/client.js';
 
 /* Create an Agent 1 or an Agent 2 — the login account only.
@@ -28,19 +29,29 @@ import { getErrorMessage } from '../../api/client.js';
    Required and format rules are the browser's own (`required`, `pattern`), so
    the field that is wrong is the field that gets focused. */
 
-/* Archived departments are refused server-side — they cannot gain staff — so
-   they are not offered. Draft ones are allowed but flagged, because posting an
-   agent to a department citizens cannot yet see is usually onboarding getting
-   ahead of the catalogue rather than a mistake. */
-const isPostable = (department) => department.status !== 'archived';
+/* Only an active department can gain staff — the API refuses the rest, so
+   offering them would be offering a choice that cannot be saved. */
+const isPostable = (department) => department.status === 'active';
 
 export function AgentForm({ level, onSubmit, onCancel, saving = false }) {
   const chosen = findLevel(level);
   const [form, setForm] = useState(emptyAgentForm);
 
+  /* The admin has to read this password back to the agent, so they need to see
+     what they typed — a temporary password mistyped behind dots is an account
+     nobody can sign into and a support call to find out why. */
+  const [showPassword, setShowPassword] = useState(false);
+
   const [departments, setDepartments] = useState([]);
   const [loadingDepartments, setLoadingDepartments] = useState(true);
   const [departmentError, setDepartmentError] = useState(null);
+
+  /* The chosen department's catalogue. Fetched per department rather than all
+     at once: an agent can only be scoped to services their own department owns
+     — the API refuses the rest — so the whole list would mostly be choices that
+     cannot be saved. */
+  const [services, setServices] = useState([]);
+  const [loadingServices, setLoadingServices] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -74,13 +85,15 @@ export function AgentForm({ level, onSubmit, onCancel, saving = false }) {
         : [...form.services, id]
     );
 
-  const toggleDocument = (type) =>
-    set(
-      'documents',
-      form.documents.includes(type)
-        ? form.documents.filter((item) => item !== type)
-        : [...form.documents, type]
-    );
+  /* Paired with the Onboarding documents section below, which is commented out
+     — uncomment both together. */
+  // const toggleDocument = (type) =>
+  //   set(
+  //     'documents',
+  //     form.documents.includes(type)
+  //       ? form.documents.filter((item) => item !== type)
+  //       : [...form.documents, type]
+  //   );
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -92,10 +105,36 @@ export function AgentForm({ level, onSubmit, onCancel, saving = false }) {
   // Drives the employee-ID preview — the department's code is its segment of it.
   const departmentCode = posting?.code;
 
-  /* Only the services of the chosen department can be assigned, and there is no
-     services endpoint yet — so this stays empty and the field explains what an
-     empty scope means rather than pretending to offer a choice. */
-  const services = [];
+  /* Reruns whenever the posting changes. The chips below belong to the previous
+     department until this lands, which is why choosing one also clears the
+     selection — see the department select's onChange. */
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!form.department) return undefined;
+
+    // The spinner has to appear when the request starts, not when it finishes.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- see above
+    setLoadingServices(true);
+
+    servicesApi
+      .listServices({ limit: 100, department: form.department })
+      .then((data) => {
+        if (!cancelled) setServices(data.services);
+      })
+      .catch(() => {
+        // The field reads "none yet" either way, and the department select
+        // above is already reporting whether the API is reachable.
+        if (!cancelled) setServices([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingServices(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [form.department]);
 
   return (
     <form className="form" onSubmit={handleSubmit}>
@@ -144,14 +183,21 @@ export function AgentForm({ level, onSubmit, onCancel, saving = false }) {
             <input
               className="field2__input"
               type="tel"
+              inputMode="numeric"
               value={form.mobile}
               maxLength={10}
               pattern={MOBILE_PATTERN}
               placeholder="Enter a 10-digit mobile number"
               required
-              onChange={(event) => set('mobile', event.target.value)}
+              /* `type="tel"` is a hint about the keyboard, not a filter — it
+                 accepts letters like any text box, and `pattern` only speaks up
+                 at submit. Dropping non-digits as they are typed means the
+                 field can only ever hold what the API will accept. */
+              onChange={(event) => set('mobile', event.target.value.replace(/\D/g, ''))}
             />
-            <span className="field2__hint">Password-reset OTPs are sent here.</span>
+            <span className="field2__hint">
+              10 digits, starting 6–9. Password-reset OTPs are sent here.
+            </span>
           </label>
 
           <label className="field2">
@@ -173,15 +219,31 @@ export function AgentForm({ level, onSubmit, onCancel, saving = false }) {
 
           <label className="field2">
             <span className="field2__label">Temporary password *</span>
-            <input
-              className="field2__input"
-              type="password"
-              value={form.password}
-              minLength={8}
-              maxLength={72}
-              required
-              onChange={(event) => set('password', event.target.value)}
-            />
+
+            <span className="field2__control">
+              <input
+                className="field2__input field2__input--with-action"
+                type={showPassword ? 'text' : 'password'}
+                value={form.password}
+                minLength={8}
+                maxLength={72}
+                autoComplete="new-password"
+                required
+                onChange={(event) => set('password', event.target.value)}
+              />
+              {/* Inside the label, so it cannot be tabbed past unnoticed — but
+                  type="button", or it would submit the form. */}
+              <button
+                className="field2__toggle"
+                type="button"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                aria-pressed={showPassword}
+                onClick={() => setShowPassword((visible) => !visible)}
+              >
+                <Icon name={showPassword ? 'eyeOff' : 'eye'} size={16} />
+              </button>
+            </span>
+
             <span className="field2__hint">8–72 characters, with a letter and a number.</span>
           </label>
 
@@ -224,6 +286,7 @@ export function AgentForm({ level, onSubmit, onCancel, saving = false }) {
               onChange={(event) => {
                 set('department', event.target.value);
                 set('services', []);
+                setServices([]);
               }}
             >
               <option value="">
@@ -232,7 +295,6 @@ export function AgentForm({ level, onSubmit, onCancel, saving = false }) {
               {departments.map((department) => (
                 <option value={department._id} key={department._id}>
                   {department.name} ({department.code})
-                  {department.status === 'draft' ? ' — draft' : ''}
                 </option>
               ))}
             </select>
@@ -275,9 +337,11 @@ export function AgentForm({ level, onSubmit, onCancel, saving = false }) {
               </div>
             ) : (
               <p className="field2__hint">
-                {posting
-                  ? `No services are set up for ${posting.name} yet, so this agent can be assigned any of them once there are.`
-                  : 'Pick a department first.'}
+                {!posting && 'Pick a department first.'}
+                {posting && loadingServices && `Loading ${posting.name} services…`}
+                {posting &&
+                  !loadingServices &&
+                  `No services are set up for ${posting.name} yet, so this agent can be assigned any of them once there are.`}
               </p>
             )}
 
@@ -289,7 +353,7 @@ export function AgentForm({ level, onSubmit, onCancel, saving = false }) {
       </section>
 
       {/* -------------------------------------------------------- documents */}
-      <section className="form__group">
+      {/* <section className="form__group">
         <h2 className="form__group-title">Onboarding documents</h2>
         <p className="form__group-hint">
           Tick what has been collected — the agent uploads the files themselves later. Marked{' '}
@@ -316,7 +380,7 @@ export function AgentForm({ level, onSubmit, onCancel, saving = false }) {
             );
           })}
         </div>
-      </section>
+      </section> */}
 
       <div className="form__actions">
         <button className="btn" type="button" disabled={saving} onClick={onCancel}>

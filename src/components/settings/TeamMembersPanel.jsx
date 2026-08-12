@@ -52,12 +52,6 @@ export function TeamMembersPanel({ user }) {
       count={ADMINS.length}
       subtitle="Administrator accounts — every one of them holds the full back office"
       flush
-      action={
-        <button className="btn btn--primary" type="button">
-          <Icon name="plus" size={14} />
-          Add User
-        </button>
-      }
     >
       <PanelSearch
         value={query}

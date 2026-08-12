@@ -7,9 +7,9 @@ import { EDIT_STATUS_OPTIONS, STATUS_OPTIONS, statusNote } from '../../constants
    on everything above it. Deciding to go live before the fee is set or the form
    is built is how a half-configured service ends up in the catalogue.
 
-   Draft and Active on create; the full lifecycle on edit, because deactivating
-   and archiving are what an edit is for and neither is a way to open a service.
-   The API enforces the same split — see CREATABLE_STATUSES in the validator. */
+   Two states, the same two on create and on edit: a service is in the
+   catalogue or it is not. The API agrees — see CREATABLE_STATUSES in the
+   service validator. */
 
 export function ServicePublishing({ value, editing = false, fieldCount, onChange }) {
   const options = editing ? EDIT_STATUS_OPTIONS : STATUS_OPTIONS;
@@ -22,8 +22,8 @@ export function ServicePublishing({ value, editing = false, fieldCount, onChange
     <section className="form__group">
       <h2 className="form__group-title">Publishing</h2>
       <p className="form__group-hint">
-        A draft service is invisible to citizens and cannot take applications, but can be built out
-        in the meantime.
+        An inactive service is invisible to citizens and cannot take applications, but can be built
+        out in the meantime.
       </p>
 
       <div className="form__grid">

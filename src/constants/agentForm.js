@@ -35,20 +35,19 @@ export const AGENT_LEVELS = [
   },
 ];
 
-/** USER_STATUS, minus the moderation outcomes — nothing is created suspended. */
+/** USER_STATUS in full — an account either works or it does not. */
 export const STATUS_OPTIONS = [
   { value: 'active', label: 'Active — can sign in now' },
-  { value: 'pending', label: 'Pending — activate after onboarding' },
+  { value: 'inactive', label: 'Inactive — cannot sign in yet' },
 ];
 
-/* On edit the whole lifecycle is available: suspending and reactivating are
-   exactly what an edit is for, and an account also goes back to pending during
-   re-onboarding, to inactive when someone leaves, and to blocked when the
-   reason is not administrative.
+/* The whole lifecycle, which is now two states. Why an account was deactivated
+   — onboarding, a hold, misconduct, someone leaving — is the reason recorded
+   with the change rather than a status of its own.
 
-   `note` is the consequence, because every one of these except `active` ends
-   the agent's session the moment it is saved — the API clears their refresh
-   token so they are signed out rather than left working until it expires. */
+   `note` is the consequence: deactivating ends the agent's session the moment
+   it is saved, because the API clears their refresh token rather than letting
+   them work until it expires. */
 export const EDIT_STATUS_OPTIONS = [
   {
     value: 'active',
@@ -56,24 +55,9 @@ export const EDIT_STATUS_OPTIONS = [
     note: 'The account works normally.',
   },
   {
-    value: 'pending',
-    label: 'Pending — waiting on onboarding',
-    note: 'Signs the agent out. Use while paperwork is being collected.',
-  },
-  {
     value: 'inactive',
-    label: 'Inactive — stood down',
-    note: 'Signs the agent out. For someone who has left, or a desk that is closed.',
-  },
-  {
-    value: 'suspended',
-    label: 'Suspended — access withheld',
-    note: 'Signs the agent out. An administrative hold that is meant to be lifted.',
-  },
-  {
-    value: 'blocked',
-    label: 'Blocked — access refused',
-    note: 'Signs the agent out. For a reason that is not administrative.',
+    label: 'Inactive — cannot sign in',
+    note: 'Signs the agent out of every device at once. Say why in the reason box — it is the only record of which kind of inactive this is.',
   },
 ];
 

@@ -52,7 +52,7 @@ export const AGENTS = [
     department: 'Transport',
     assigned: 9,
     completed: 154,
-    status: 'suspended',
+    status: 'inactive',
     lastActive: '6d ago',
   },
   {
@@ -64,7 +64,7 @@ export const AGENTS = [
     department: 'Social Welfare',
     assigned: 0,
     completed: 0,
-    status: 'pending',
+    status: 'inactive',
     lastActive: 'Never',
   },
   {
@@ -174,7 +174,7 @@ export const DEPARTMENTS = [
   { id: 'dept-urban', name: 'Urban Development', code: 'URB', head: 'Sanjay Patil', status: 'active' },
   { id: 'dept-registration', name: 'Registration', code: 'REG', head: 'Unassigned', status: 'active' },
   { id: 'dept-transport', name: 'Transport', code: 'TRN', head: 'Sanjay Patil', status: 'active' },
-  { id: 'dept-welfare', name: 'Social Welfare', code: 'SWL', head: 'Unassigned', status: 'draft' },
+  { id: 'dept-welfare', name: 'Social Welfare', code: 'SWL', head: 'Unassigned', status: 'inactive' },
 ];
 
 /* No longer rendered anywhere — ServicesPage reads the catalogue from the API.
@@ -190,7 +190,7 @@ export const SERVICES = [
   { id: 'svc-zone', name: 'Zone Certificate', code: 'ZC', department: 'dept-urban', fee: 500, slaHours: 96, status: 'inactive' },
   { id: 'svc-deed', name: 'Sale Deed Registration', code: 'SDR', department: 'dept-registration', fee: 1800, slaHours: 120, status: 'active' },
   { id: 'svc-dl', name: 'Driving Licence Renewal', code: 'DLR', department: 'dept-transport', fee: 700, slaHours: 72, status: 'active' },
-  { id: 'svc-pension', name: 'Pension Enrolment', code: 'PEN', department: 'dept-welfare', fee: 0, slaHours: 168, status: 'draft' },
+  { id: 'svc-pension', name: 'Pension Enrolment', code: 'PEN', department: 'dept-welfare', fee: 0, slaHours: 168, status: 'inactive' },
 ];
 
 export const CITIZENS = [
@@ -235,7 +235,7 @@ export const CITIZENS = [
     district: 'Kalaburagi',
     applications: 4,
     walletBalance: 90,
-    status: 'suspended',
+    status: 'inactive',
     joined: '28 Mar 2026',
   },
   {
@@ -246,7 +246,7 @@ export const CITIZENS = [
     district: 'Mangaluru',
     applications: 1,
     walletBalance: 2000,
-    status: 'pending',
+    status: 'inactive',
     joined: '02 Aug 2026',
   },
   {
@@ -268,7 +268,7 @@ export const CITIZENS = [
     district: 'Vijayapura',
     applications: 3,
     walletBalance: 0,
-    status: 'blocked',
+    status: 'inactive',
     joined: '22 May 2026',
   },
 ];

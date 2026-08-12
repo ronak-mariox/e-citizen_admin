@@ -59,7 +59,7 @@ export async function updateDepartment(departmentId, payload) {
  *
  * Refused with a 409 while any service or agent still points at it — the
  * message names the counts. A department with history is archived through
- * `updateDepartment({ status: 'archived' })` instead.
+ * `updateDepartment({ status: 'inactive' })` instead.
  */
 export async function deleteDepartment(departmentId) {
   const response = await client.delete(`/departments/${departmentId}`);

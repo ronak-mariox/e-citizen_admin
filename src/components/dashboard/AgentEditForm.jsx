@@ -159,7 +159,8 @@ export function AgentEditForm({ agent, saving = false, onSubmit, onCancel }) {
               onChange={(event) => set('mobile', event.target.value.replace(/\D/g, ''))}
             />
             <span className="field2__hint">
-              Where a password-reset code is sent. Must be unique across staff.
+              10 digits, starting 6–9. Where a password-reset code is sent, and unique across
+              staff.
             </span>
           </label>
 

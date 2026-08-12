@@ -12,7 +12,7 @@ import { SUPPORT_EMAIL } from '../constants/brand.js';
 const MIN_PASSWORD_LENGTH = 4;
 
 /** Matches the admin row in backend/src/scripts/seed_agents.js. */
-const SEEDED_ACCOUNT = { email: 'admin@company.com', password: 'admin@12345' };
+const SEEDED_ACCOUNT = { email: 'admin@example.com', password: 'password123' };
 
 export function LoginForm({ onSubmit }) {
   const emailFieldId = useId();

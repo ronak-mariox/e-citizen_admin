@@ -38,19 +38,14 @@ export const APPLICATION_STATUS_TONE = {
 
 /** Account lifecycle — USER_STATUS, shared by all three account collections. */
 export const USER_STATUS_TONE = {
-  pending: { label: 'Pending', tone: 'amber' },
   active: { label: 'Active', tone: 'green' },
   inactive: { label: 'Inactive', tone: 'slate' },
-  suspended: { label: 'Suspended', tone: 'orange' },
-  blocked: { label: 'Blocked', tone: 'red' },
 };
 
 /** Publishing lifecycle — CATALOG_STATUS. */
 export const CATALOG_STATUS_TONE = {
-  draft: { label: 'Draft', tone: 'slate' },
   active: { label: 'Active', tone: 'green' },
   inactive: { label: 'Inactive', tone: 'slate' },
-  archived: { label: 'Archived', tone: 'red' },
 };
 
 /** APPLICATION_PRIORITY, rendered as a .tag rather than a .pill. */

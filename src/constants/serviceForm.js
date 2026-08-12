@@ -23,8 +23,8 @@
      section      ≤ 120
      displayOrder number, defaults to 0
 
-   `slug`, `code` and `status` are absent on purpose: the schema derives the
-   slug from the name in a pre-validate hook and defaults the status to draft,
+   `slug` and `code` are absent on purpose: the schema derives the slug from the
+   name in a pre-validate hook. `status` is asked for, and defaults to inactive,
    so a new service is never published by accident. */
 
 export const NAME_MAX = 200;
@@ -276,37 +276,22 @@ export function slaLabel(hours) {
   return `${value} hours (${Number.isInteger(days) ? days : days.toFixed(1)} days)`;
 }
 
-/* CATALOG_STATUS, minus the two that are outcomes rather than starting points —
-   nothing is created inactive, and nothing is created archived. The API agrees:
-   `CREATABLE_STATUSES` in the service validator refuses the other two. */
+/* CATALOG_STATUS in full — a service is in the catalogue or it is not, and the
+   same two are offered whether it is being created or edited. */
 export const STATUS_OPTIONS = [
-  {
-    value: 'draft',
-    label: 'Draft — invisible to citizens',
-    note: 'Build the form out, preview it, price it. Nothing is listed and nothing can be applied for until this is changed.',
-  },
   {
     value: 'active',
     label: 'Active — live in the catalogue',
     note: 'Citizens can find this service and apply for it as soon as it is saved. The form below is what they will fill in.',
   },
-];
-
-/* On edit the whole lifecycle is available — deactivating and archiving are
-   exactly what an edit is for, they are just not ways to open a service. */
-export const EDIT_STATUS_OPTIONS = [
-  ...STATUS_OPTIONS,
   {
     value: 'inactive',
-    label: 'Inactive — temporarily closed',
-    note: 'Stays in the catalogue but stops taking new applications. Use this for a department outage, not for retirement.',
-  },
-  {
-    value: 'archived',
-    label: 'Archived — retired, kept for history',
-    note: 'Removed from the catalogue for good. Applications already filed against it stay readable, which is why this exists instead of deleting.',
+    label: 'Inactive — invisible to citizens',
+    note: 'Nothing is listed and nothing can be applied for. Build the form out, price it and preview it here first; applications already filed stay readable.',
   },
 ];
+
+export const EDIT_STATUS_OPTIONS = STATUS_OPTIONS;
 
 export const statusNote = (value) =>
   EDIT_STATUS_OPTIONS.find((option) => option.value === value)?.note ?? '';
@@ -351,7 +336,7 @@ export function emptyServiceForm() {
     applicationMode: 'online',
     // The schema's own default. A service nobody has priced or built a form for
     // should not be open for applications the moment it is saved.
-    status: 'draft',
+    status: 'inactive',
     // Rupees while the admin is typing; converted to paise on submit.
     fees: emptyFees(),
     timeline: emptyTimeline(),

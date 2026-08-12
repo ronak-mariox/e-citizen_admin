@@ -551,6 +551,13 @@
   gap: var(--space-5);
 }
 
+/* The way out of a form that took over the page. Above the heading and hard
+   left — reading starts in that corner, and it is the same place on every
+   screen that has one. */
+.page__back {
+  margin-bottom: var(--space-4);
+}
+
 .page__title {
   font-size: var(--text-lg);
   font-weight: 700;
@@ -1868,6 +1875,35 @@
 
 .field2__input:invalid:not(:placeholder-shown) {
   border-color: var(--color-negative);
+}
+
+/* A field that carries a button inside it — the show/hide on a password. */
+.field2__control {
+  position: relative;
+  display: block;
+}
+
+.field2__input--with-action {
+  padding-right: 40px;
+}
+
+.field2__toggle {
+  position: absolute;
+  top: 50%;
+  right: var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  color: var(--color-dash-text);
+  background: none;
+  border: 0;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+.field2__toggle:hover {
+  color: var(--color-brand);
 }
 
 .field2__input--area {

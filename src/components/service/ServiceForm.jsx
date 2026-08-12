@@ -43,7 +43,7 @@ export function ServiceForm({ service, onSubmit, onCancel, saving = false }) {
           department: service.department?._id ?? service.department ?? '',
           category: service.category?._id ?? service.category ?? '',
           applicationMode: service.applicationMode ?? 'online',
-          status: service.status ?? 'draft',
+          status: service.status ?? 'inactive',
           fees: feesToForm(service.fees),
           timeline: timelineToForm(service),
         }
@@ -84,7 +84,7 @@ export function ServiceForm({ service, onSubmit, onCancel, saving = false }) {
       <p className="form__lead">
         {editing
           ? 'Changing a field key after applications have been submitted orphans the answers already stored under the old one. Rename labels freely; rename keys deliberately.'
-          : 'A service defaults to a draft — invisible to citizens — so the form can be built out and previewed before anyone can apply. Publishing is the last field on this page.'}
+          : 'A service starts inactive — invisible to citizens — so the form can be built out and previewed before anyone can apply. Publishing is the last field on this page.'}
       </p>
 
       <ServiceBasicInfo form={form} onChange={set} />
