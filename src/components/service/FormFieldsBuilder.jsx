@@ -17,7 +17,7 @@ import { createFormField, moveField, renumber } from '../../constants/serviceFor
    buttons are not a fallback for a broken drag; they are how the same move is
    made from a keyboard, which drag-and-drop cannot be. */
 
-export function FormFieldsBuilder({ fields, errors, onChange }) {
+export function FormFieldsBuilder({ fields, errors, documents = [], onChange }) {
   // Which cards are open. New ones open on their own — a card added and left
   // collapsed is a field nobody configured.
   const [expanded, setExpanded] = useState(() => new Set());
@@ -70,6 +70,12 @@ export function FormFieldsBuilder({ fields, errors, onChange }) {
 
   const sections = [...new Set(fields.map((field) => field.section.trim()).filter(Boolean))];
 
+  /* The names typed under Required documents, offered on each field's label.
+     A field that collects the Sale Deed should be called "Sale Deed", and
+     retyping it is how the two end up spelt differently. Blank rows are not
+     suggestions, and the same name twice is one suggestion. */
+  const documentNames = [...new Set(documents.map((name) => name.trim()).filter(Boolean))];
+
   const invalid = fields.filter((field) => errors[field.uid]).length;
 
   return (
@@ -111,6 +117,7 @@ export function FormFieldsBuilder({ fields, errors, onChange }) {
               expanded={expanded.has(field.uid)}
               errors={errors[field.uid]}
               sections={sections}
+              documents={documentNames}
               candidates={candidatesFor(index)}
               dragging={dragUid === field.uid}
               dragOver={overUid === field.uid && dragUid !== field.uid}

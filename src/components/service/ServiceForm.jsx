@@ -4,13 +4,18 @@ import Icon from '../dashboard/Icon.jsx';
 import ServiceBasicInfo from './ServiceBasicInfo.jsx';
 import ServiceFees from './ServiceFees.jsx';
 import ServiceTimeline from './ServiceTimeline.jsx';
+import ServiceEligibility from './ServiceEligibility.jsx';
+import ServiceDocuments from './ServiceDocuments.jsx';
+import ServiceFaqs from './ServiceFaqs.jsx';
 import ServicePublishing from './ServicePublishing.jsx';
 import FormFieldsBuilder from './FormFieldsBuilder.jsx';
 import FormPreview from './FormPreview.jsx';
 import {
   buildServicePayload,
   buildServiceUpdate,
+  eligibilityToForm,
   emptyServiceForm,
+  faqsToForm,
   feesToForm,
   formFieldToState,
   timelineToForm,
@@ -46,6 +51,9 @@ export function ServiceForm({ service, onSubmit, onCancel, saving = false }) {
           status: service.status ?? 'inactive',
           fees: feesToForm(service.fees),
           timeline: timelineToForm(service),
+          eligibility: eligibilityToForm(service.eligibility),
+          requiredDocuments: [...(service.requiredDocuments ?? [])],
+          faqs: faqsToForm(service.faqs),
         }
       : emptyServiceForm()
   );
@@ -96,11 +104,26 @@ export function ServiceForm({ service, onSubmit, onCancel, saving = false }) {
         onChange={(timeline) => set('timeline', timeline)}
       />
 
+      <ServiceEligibility
+        eligibility={form.eligibility}
+        onChange={(eligibility) => set('eligibility', eligibility)}
+      />
+
+      <ServiceDocuments
+        documents={form.requiredDocuments}
+        onChange={(documents) => set('requiredDocuments', documents)}
+      />
+
+      {/* The documents above travel with it: a field that collects one should
+          be named after it, so the builder offers them on the label. */}
       <FormFieldsBuilder
         fields={fields}
         errors={attempted ? errors : {}}
+        documents={form.requiredDocuments}
         onChange={setFields}
       />
+
+      <ServiceFaqs faqs={form.faqs} onChange={(faqs) => set('faqs', faqs)} />
 
       <ServicePublishing
         value={form.status}

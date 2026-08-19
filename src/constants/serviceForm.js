@@ -340,7 +340,81 @@ export function emptyServiceForm() {
     // Rupees while the admin is typing; converted to paise on submit.
     fees: emptyFees(),
     timeline: emptyTimeline(),
+    eligibility: emptyEligibility(),
+    // Just names — "Aadhaar Card", "Sale Deed". The papers a citizen is told to
+    // go and find, which is not the same as the file questions on the form.
+    requiredDocuments: [],
+    faqs: [],
   };
+}
+
+/** The gender and category values eligibility accepts, mirroring the schema. */
+export const ELIGIBILITY_GENDERS = [
+  { value: 'any', label: 'Anyone' },
+  { value: 'male', label: 'Male only' },
+  { value: 'female', label: 'Female only' },
+  { value: 'other', label: 'Other only' },
+];
+
+export const ELIGIBILITY_CATEGORIES = [
+  { value: 'general', label: 'General' },
+  { value: 'obc', label: 'OBC' },
+  { value: 'sc', label: 'SC' },
+  { value: 'st', label: 'ST' },
+  { value: 'ews', label: 'EWS' },
+  { value: 'other', label: 'Other' },
+];
+
+/**
+ * Nothing stated — which is not the same as "open to anyone" stated out loud.
+ * A service that leaves this alone sends no eligibility block at all.
+ */
+export function emptyEligibility() {
+  return {
+    summary: '',
+    criteria: [],
+    minAge: '',
+    maxAge: '',
+    gender: '',
+    categories: [],
+    maxAnnualIncome: '',
+    // The schema's default: most government services want a verified citizen.
+    requiresKyc: true,
+  };
+}
+
+export function createFaq() {
+  return { uid: nextUid(), question: '', answer: '' };
+}
+
+/** Service document -> the eligibility form state. */
+export function eligibilityToForm(eligibility) {
+  const source = eligibility ?? {};
+
+  return {
+    summary: source.summary ?? '',
+    criteria: [...(source.criteria ?? [])],
+    minAge: source.minAge == null ? '' : String(source.minAge),
+    maxAge: source.maxAge == null ? '' : String(source.maxAge),
+    // 'any' is the schema's default, so an untouched service shows no choice
+    // rather than one nobody made.
+    gender: source.gender && source.gender !== 'any' ? source.gender : '',
+    categories: [...(source.categories ?? [])],
+    maxAnnualIncome:
+      source.maxAnnualIncome == null ? '' : String(source.maxAnnualIncome),
+    requiresKyc: source.requiresKyc ?? true,
+  };
+}
+
+/** Service document -> the FAQ rows, in the order they are stored. */
+export function faqsToForm(faqs) {
+  return [...(faqs ?? [])]
+    .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0))
+    .map((faq) => ({
+      uid: nextUid(),
+      question: faq.question ?? '',
+      answer: faq.answer ?? '',
+    }));
 }
 
 export function emptyFees() {
@@ -579,7 +653,68 @@ export function buildServicePayload(form, fields) {
   if (trimmed(form.description)) payload.description = trimmed(form.description);
   if (form.category) payload.category = form.category;
 
+  /* Both blocks are omitted entirely when nothing was entered: on a create,
+     an absent key means "never said", which is what the schema's defaults are
+     for. Sending an empty one would store a stated-and-empty eligibility. */
+  const eligibility = buildEligibilityPayload(form.eligibility);
+  if (eligibility) payload.eligibility = eligibility;
+
+  const documents = buildDocumentsPayload(form.requiredDocuments);
+  if (documents.length) payload.requiredDocuments = documents;
+
+  const faqs = buildFaqsPayload(form.faqs);
+  if (faqs.length) payload.faqs = faqs;
+
   return payload;
+}
+
+/** Document names -> the API's array, blanks dropped. */
+export function buildDocumentsPayload(documents) {
+  return (documents ?? []).map(trimmed).filter(Boolean);
+}
+
+/**
+ * Eligibility form state -> the API's block, or null when nothing was stated.
+ *
+ * Each part is dropped when blank rather than sent as '': the server treats an
+ * empty string as "no rule" anyway, and an absent key reads the same in the
+ * database as a service that never had one.
+ */
+export function buildEligibilityPayload(eligibility) {
+  const source = eligibility ?? emptyEligibility();
+  const block = {};
+
+  if (trimmed(source.summary)) block.summary = trimmed(source.summary);
+
+  const criteria = (source.criteria ?? []).map(trimmed).filter(Boolean);
+  if (criteria.length) block.criteria = criteria;
+
+  if (trimmed(source.minAge)) block.minAge = Number(source.minAge);
+  if (trimmed(source.maxAge)) block.maxAge = Number(source.maxAge);
+  if (source.gender) block.gender = source.gender;
+
+  if ((source.categories ?? []).length) block.categories = [...source.categories];
+  if (trimmed(source.maxAnnualIncome)) {
+    block.maxAnnualIncome = Number(source.maxAnnualIncome);
+  }
+
+  // Always sent: false is a decision, and leaving it out would let the schema's
+  // `true` default quietly override an admin who turned it off.
+  block.requiresKyc = Boolean(source.requiresKyc);
+
+  // Only requiresKyc set means nothing was actually stated.
+  return Object.keys(block).length > 1 ? block : null;
+}
+
+/** FAQ rows -> the API's array, numbered by their position on screen. */
+export function buildFaqsPayload(faqs) {
+  return (faqs ?? [])
+    .filter((faq) => trimmed(faq.question) && trimmed(faq.answer))
+    .map((faq, index) => ({
+      question: trimmed(faq.question),
+      answer: trimmed(faq.answer),
+      displayOrder: index + 1,
+    }));
 }
 
 /**
@@ -605,11 +740,22 @@ export function buildServiceUpdate(form, fields) {
     fees: buildFeesPayload(form.fees ?? emptyFees()),
     ...buildTimelinePayload(form.timeline ?? emptyTimeline()),
     formFields: fields.map(buildFormFieldPayload),
+    /* Unlike a create, both are always sent: this is the list as it should end
+       up, so clearing every FAQ has to mean the service ends with none — and
+       omitting them would silently keep what was there. */
+    eligibility: buildEligibilityPayload(form.eligibility) ?? emptyEligibilityPayload(),
+    requiredDocuments: buildDocumentsPayload(form.requiredDocuments),
+    faqs: buildFaqsPayload(form.faqs),
   };
 
   if (form.category) payload.category = form.category;
 
   return payload;
+}
+
+/** What an emptied eligibility section sends: the block, cleared. */
+function emptyEligibilityPayload() {
+  return { summary: '', criteria: [], requiresKyc: true };
 }
 
 /**

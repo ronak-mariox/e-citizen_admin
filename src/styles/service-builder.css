@@ -426,3 +426,84 @@
     display: none;
   }
 }
+
+/* -------------------------------------------- eligibility criteria + FAQs -- */
+
+/* A list of one-line inputs, each with its own remove button. */
+.repeater {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: var(--space-3) 0;
+}
+
+.repeater__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.repeater__row .field2__input {
+  flex: 1;
+  min-width: 0;
+}
+
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin: var(--space-4) 0;
+}
+
+/* The same card the form-field builder uses, without the collapse — a FAQ is
+   two inputs, so hiding them behind a header would save nothing. */
+.faq-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  background-color: var(--color-surface);
+  border: var(--field-border) solid var(--color-dash-border);
+  border-radius: var(--radius-md);
+}
+
+.faq-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.faq-card__position {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  line-height: var(--leading-xs);
+  color: var(--color-muted);
+  font-variation-settings: 'opsz' 14;
+}
+
+.faq-card__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* A checkbox and its explanation on one row, rather than a label above a box. */
+.field2--inline {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.field2--inline input[type='checkbox'] {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+}
+
+.field2--inline > span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}

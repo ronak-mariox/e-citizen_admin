@@ -35,6 +35,7 @@ export function FormFieldCard({
   expanded,
   errors = {},
   sections,
+  documents = [],
   candidates,
   dragging,
   dragOver,
@@ -76,6 +77,7 @@ export function FormFieldCard({
 
   const hasErrors = Object.keys(errors).length > 0;
   const listId = `sections-${field.uid}`;
+  const documentsListId = `documents-${field.uid}`;
 
   const className = [
     'field-card',
@@ -157,19 +159,59 @@ export function FormFieldCard({
       {expanded && (
         <div className="field-card__body">
           <div className="builder__grid">
+            {/* First, because it is the question asked before the question:
+                which part of the form does this belong to. Fields naming the
+                same group are drawn under one heading, here in the preview and
+                in the app. */}
+            <label className="field2">
+              <span className="field2__label">Group name</span>
+              <input
+                className="field2__input"
+                value={field.section}
+                maxLength={FIELD_SECTION_MAX}
+                placeholder="e.g. Applicant Details"
+                list={listId}
+                onChange={(event) => set('section', event.target.value)}
+              />
+              <datalist id={listId}>
+                {sections.map((section) => (
+                  <option value={section} key={section} />
+                ))}
+              </datalist>
+              <span className="field2__hint">
+                Fields sharing a group are shown under one heading. Groups already used on this
+                service are offered as you type; leave it blank for one ungrouped form.
+              </span>
+            </label>
+
             <label className="field2">
               <span className="field2__label">Field label *</span>
+              {/* The required documents are offered here, so a field that
+                  collects one is named exactly as the service page lists it.
+                  A suggestion, not a menu: any other label is still typed. */}
               <input
                 className="field2__input"
                 value={field.label}
                 maxLength={FIELD_LABEL_MAX}
                 placeholder="Enter the label the citizen reads"
+                list={documents.length > 0 ? documentsListId : undefined}
                 onChange={(event) => setLabel(event.target.value)}
               />
+              {documents.length > 0 && (
+                <datalist id={documentsListId}>
+                  {documents.map((document) => (
+                    <option value={document} key={document} />
+                  ))}
+                </datalist>
+              )}
               {errors.label ? (
                 <span className="field2__hint field2__hint--error">{errors.label}</span>
               ) : (
-                <span className="field2__hint">What the citizen reads above the input.</span>
+                <span className="field2__hint">
+                  What the citizen reads above the input.
+                  {documents.length > 0 &&
+                    ' Click for the required documents you listed above.'}
+                </span>
               )}
             </label>
 
@@ -209,26 +251,6 @@ export function FormFieldCard({
                 <span className="field2__hint">Grey example text inside the empty input.</span>
               </label>
             )}
-
-            <label className="field2">
-              <span className="field2__label">Section</span>
-              <input
-                className="field2__input"
-                value={field.section}
-                maxLength={FIELD_SECTION_MAX}
-                placeholder="Enter a section name"
-                list={listId}
-                onChange={(event) => set('section', event.target.value)}
-              />
-              <datalist id={listId}>
-                {sections.map((section) => (
-                  <option value={section} key={section} />
-                ))}
-              </datalist>
-              <span className="field2__hint">
-                Fields sharing a section are grouped under one heading.
-              </span>
-            </label>
 
             <label className="field2">
               <span className="field2__label">Display order</span>
