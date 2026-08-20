@@ -18,8 +18,9 @@ export function OtpForm({ destination, devOtp, onSubmit, onResend }) {
   const [secondsLeft, setSecondsLeft] = useState(RESEND_SECONDS);
   const [formError, setFormError] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  // Only ever set outside production, where the backend returns the code it
-  // generated because no SMS gateway is wired up yet.
+  // Set whenever the backend is configured to return the code it generated
+  // (OTP_EXPOSE_IN_RESPONSE), which is the only way to finish a reset while no
+  // SMS gateway is wired up.
   const [hint, setHint] = useState(devOtp);
 
   const code = digits.join('');
