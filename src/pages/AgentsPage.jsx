@@ -6,6 +6,7 @@ import ListToolbar from '../components/dashboard/ListToolbar.jsx';
 import TableFooter from '../components/dashboard/TableFooter.jsx';
 import PageBack from '../components/dashboard/PageBack.jsx';
 import AgentForm from '../components/dashboard/AgentForm.jsx';
+import AgentDocumentsPanel from '../components/dashboard/AgentDocumentsPanel.jsx';
 import AgentEditForm from '../components/dashboard/AgentEditForm.jsx';
 import AgentLevelChoice from '../components/dashboard/AgentLevelChoice.jsx';
 import ConfirmDialog from '../components/dashboard/ConfirmDialog.jsx';
@@ -14,7 +15,7 @@ import * as agentsApi from '../api/agents.js';
 import { getErrorMessage } from '../api/client.js';
 import { AGENT_LEVEL_LABEL } from '../constants/records.js';
 import { findLevel } from '../constants/agentForm.js';
-import { userStatus } from '../constants/statusTone.js';
+import { agentVerification, userStatus } from '../constants/statusTone.js';
 import { initialsOf } from '../utils/format.js';
 
 /* The agent roster, and where agents are created.
@@ -267,6 +268,11 @@ export function AgentsPage() {
             </p>
           )}
 
+          {/* Above the edit form, because it is the reason most visits to this
+              screen happen: a new agent cannot work until every document here
+              is verified, and a name that needed correcting can wait. */}
+          <AgentDocumentsPanel agent={editing} onReviewed={reload} />
+
           <AgentEditForm
             agent={editing}
             saving={saving}
@@ -321,6 +327,9 @@ export function AgentsPage() {
 
           {chosen ? (
             <AgentForm
+              /* Remounted per level, so the form's document checklist restarts
+                 from that level's defaults rather than keeping the other's. */
+              key={creating}
               level={creating}
               saving={saving}
               onSubmit={handleSubmit}
@@ -441,6 +450,7 @@ export function AgentsPage() {
                 <div role="columnheader">Department</div>
                 <div role="columnheader">Mobile</div>
                 <div role="columnheader">Status</div>
+                <div role="columnheader">Documents</div>
                 <div role="columnheader">Created</div>
                 <div role="columnheader" className="table__cell--end">
                   Actions
@@ -449,6 +459,7 @@ export function AgentsPage() {
 
               {agents.map((agent) => {
                 const tone = userStatus(agent.status);
+                const docs = agentVerification(agent.verificationStatus);
 
                 return (
                   <div className="table__row" role="row" key={agent._id}>
@@ -480,6 +491,17 @@ export function AgentsPage() {
 
                     <div className="table__cell" role="cell">
                       <StatusPill label={tone.label} tone={tone.tone} />
+                    </div>
+
+                    {/* Its own column rather than a second badge under the
+                        account status: they are two different questions, and an
+                        agent can be Active and still unable to work because
+                        nobody has verified their paperwork yet. Every state
+                        shows, verified included — a column that went blank on
+                        success would leave an admin unable to tell "cleared"
+                        from "not loaded". */}
+                    <div className="table__cell" role="cell">
+                      <StatusPill label={docs.label} tone={docs.tone} />
                     </div>
 
                     <div className="table__cell table__muted" role="cell">

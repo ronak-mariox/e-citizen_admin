@@ -42,6 +42,25 @@ export const USER_STATUS_TONE = {
   inactive: { label: 'Inactive', tone: 'slate' },
 };
 
+/**
+ * An agent's onboarding documents — Agent.verificationStatus on the API.
+ *
+ * Separate from USER_STATUS_TONE above and not a substitute for it: the two
+ * answer different questions. An account can be Active and still unable to work
+ * because nobody has verified its paperwork, so both pills show on the roster
+ * and neither one implies the other.
+ *
+ * Green only at the end. An admin scanning the column is looking for the rows
+ * that need them, and three shades of "not done yet" that all read as fine
+ * would hide exactly those.
+ */
+export const AGENT_VERIFICATION_TONE = {
+  not_submitted: { label: 'Docs Pending', tone: 'slate' },
+  in_review: { label: 'Review Docs', tone: 'amber' },
+  rejected: { label: 'Docs Rejected', tone: 'red' },
+  verified: { label: 'Docs Verified', tone: 'green' },
+};
+
 /** Publishing lifecycle — CATALOG_STATUS. */
 export const CATALOG_STATUS_TONE = {
   active: { label: 'Active', tone: 'green' },
@@ -57,6 +76,7 @@ export const PRIORITY_TONE = {
 };
 
 export const applicationStatus = (value) => APPLICATION_STATUS_TONE[value] ?? fallback(value);
+export const agentVerification = (value) => AGENT_VERIFICATION_TONE[value] ?? fallback(value);
 export const userStatus = (value) => USER_STATUS_TONE[value] ?? fallback(value);
 export const catalogStatus = (value) => CATALOG_STATUS_TONE[value] ?? fallback(value);
 export const priority = (value) => PRIORITY_TONE[value] ?? fallback(value);

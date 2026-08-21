@@ -4,7 +4,6 @@ import Icon from './Icon.jsx';
 import {
   DOCUMENT_OPTIONS,
   MOBILE_PATTERN,
-  REQUIRED_DOCUMENTS,
   STATUS_OPTIONS,
   buildAgentPayload,
   emptyAgentForm,
@@ -35,7 +34,7 @@ const isPostable = (department) => department.status === 'active';
 
 export function AgentForm({ level, onSubmit, onCancel, saving = false }) {
   const chosen = findLevel(level);
-  const [form, setForm] = useState(emptyAgentForm);
+  const [form, setForm] = useState(() => emptyAgentForm(level));
 
   /* The admin has to read this password back to the agent, so they need to see
      what they typed — a temporary password mistyped behind dots is an account
@@ -85,15 +84,13 @@ export function AgentForm({ level, onSubmit, onCancel, saving = false }) {
         : [...form.services, id]
     );
 
-  /* Paired with the Onboarding documents section below, which is commented out
-     — uncomment both together. */
-  // const toggleDocument = (type) =>
-  //   set(
-  //     'documents',
-  //     form.documents.includes(type)
-  //       ? form.documents.filter((item) => item !== type)
-  //       : [...form.documents, type]
-  //   );
+  const toggleDocument = (type) =>
+    set(
+      'documents',
+      form.documents.includes(type)
+        ? form.documents.filter((item) => item !== type)
+        : [...form.documents, type]
+    );
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -353,17 +350,16 @@ export function AgentForm({ level, onSubmit, onCancel, saving = false }) {
       </section>
 
       {/* -------------------------------------------------------- documents */}
-      {/* <section className="form__group">
-        <h2 className="form__group-title">Onboarding documents</h2>
+      <section className="form__group">
+        <h2 className="form__group-title">Required documents</h2>
         <p className="form__group-hint">
-          Tick what has been collected — the agent uploads the files themselves later. Marked{' '}
-          <span className="chip__star">*</span> are expected for an {chosen.label}.
+          What this {chosen.label} must hand in. Their console asks for exactly these the first
+          time they sign in, and will not open the dashboard until every one is uploaded.
         </p>
 
         <div className="chips chips--spaced">
           {DOCUMENT_OPTIONS.map((document) => {
             const isOn = form.documents.includes(document.value);
-            const expected = REQUIRED_DOCUMENTS[level].includes(document.value);
 
             return (
               <button
@@ -371,16 +367,32 @@ export function AgentForm({ level, onSubmit, onCancel, saving = false }) {
                 type="button"
                 key={document.value}
                 aria-pressed={isOn}
+                title={document.hint}
                 onClick={() => toggleDocument(document.value)}
               >
                 {isOn && <Icon name="check" size={12} />}
                 {document.label}
-                {expected && <span className="chip__star">*</span>}
               </button>
             );
           })}
         </div>
-      </section> */}
+
+        {/* The education chip is the one that needs saying out loud — it is a
+            choice of three the agent makes, not three separate uploads. */}
+        <span className="field2__hint">
+          The education certificate can be the 10th, the 12th or a graduation certificate — the
+          agent sends whichever they have, and their console records which.
+        </span>
+
+        {/* An empty list is allowed and is a real choice — but it is also what
+            an accidental double-click leaves behind, so it says so out loud
+            rather than letting the admin find out from the agent. */}
+        <span className="field2__hint">
+          {form.documents.length === 0
+            ? 'Nothing ticked — this agent goes straight to their dashboard without uploading anything.'
+            : `${form.documents.length} document${form.documents.length === 1 ? '' : 's'} will be asked for at first sign-in.`}
+        </span>
+      </section>
 
       <div className="form__actions">
         <button className="btn" type="button" disabled={saving} onClick={onCancel}>

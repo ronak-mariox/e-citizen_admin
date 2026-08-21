@@ -64,27 +64,52 @@ export const EDIT_STATUS_OPTIONS = [
 export const statusNote = (value) =>
   EDIT_STATUS_OPTIONS.find((option) => option.value === value)?.note ?? '';
 
-/** agentDocumentSchema.type — the government IDs plus onboarding paperwork. */
+/* What an agent can be asked to hand in on their first sign-in.
+
+   Copied from backend/src/constants/agentDocuments.js — the API validates
+   against that same list, so a value only present here is one the server
+   refuses, and a label that drifts from it is an admin ticking "Bank account
+   details" while the agent's console asks for a "Passbook".
+
+   Four entries, and education is one of them rather than three: the requirement
+   is the 10th, the 12th *or* the degree, whichever the agent has. The agent
+   picks which when they upload, and it comes back on the document as its
+   variant — so there is nothing for an admin to choose between here. */
 export const DOCUMENT_OPTIONS = [
-  { value: 'aadhaar', label: 'Aadhaar' },
-  { value: 'pan', label: 'PAN' },
-  { value: 'voter_id', label: 'Voter ID' },
-  { value: 'driving_license', label: 'Driving licence' },
-  { value: 'passport', label: 'Passport' },
-  { value: 'photo', label: 'Photograph' },
-  { value: 'address_proof', label: 'Address proof' },
-  { value: 'police_verification', label: 'Police verification' },
-  { value: 'agreement', label: 'Agreement' },
-  { value: 'qualification', label: 'Qualification' },
-  { value: 'other', label: 'Other' },
+  { value: 'aadhaar_card', label: 'Aadhaar card' },
+  { value: 'pan_card', label: 'PAN card' },
+  { value: 'bank_details', label: 'Bank account details' },
+  {
+    value: 'education',
+    label: 'Education certificate',
+    hint: '10th, 12th or graduation — the agent sends whichever they have',
+  },
 ];
 
-/* The schema treats every document alike; these are the ones onboarding should
-   not sign off without. An Agent 2 visits department counters with citizen
-   papers, hence the extra two. */
+export const documentLabel = (value) =>
+  DOCUMENT_OPTIONS.find((option) => option.value === value)?.label ?? value;
+
+/** EDUCATION_VARIANT_LABELS on the API — what came back on an education row. */
+export const VARIANT_LABELS = {
+  '10th': '10th certificate',
+  '12th': '12th certificate',
+  graduation: 'Graduation certificate',
+};
+
+export const variantLabel = (variant) => VARIANT_LABELS[variant] ?? variant;
+
+/* What a new form starts with — DEFAULT_REQUIRED_DOCUMENTS on the API, kept in
+   step so an admin who changes nothing gets the same list either way.
+
+   All four for both levels: an Agent 1 and an Agent 2 are the same person as
+   far as identity, tax, payout and schooling go. Any of them can still be
+   unticked per account, and an empty list is a real answer meaning the agent is
+   asked for nothing. */
+const ALL_DOCUMENTS = DOCUMENT_OPTIONS.map((option) => option.value);
+
 export const REQUIRED_DOCUMENTS = {
-  l1: ['photo', 'aadhaar', 'address_proof'],
-  l2: ['photo', 'aadhaar', 'address_proof', 'police_verification', 'agreement'],
+  l1: ALL_DOCUMENTS,
+  l2: ALL_DOCUMENTS,
 };
 
 /** INDIAN_MOBILE_REGEX from models/common_schema.js. */
@@ -107,7 +132,7 @@ export function previewEmployeeId(departmentCode, level) {
 }
 
 /** Blank form, carrying the defaults the schema declares. */
-export function emptyAgentForm() {
+export function emptyAgentForm(level = 'l1') {
   return {
     fullName: '',
     mobile: '',
@@ -116,7 +141,11 @@ export function emptyAgentForm() {
     status: 'active',
     department: '',
     services: [],
-    documents: [],
+    // Pre-ticked rather than empty: these are what the API would have chosen
+    // anyway, and starting from nothing invites an account created with no
+    // checklist at all by an admin who never scrolled that far. Copied, so
+    // toggling a chip cannot edit the shared default list itself.
+    documents: [...(REQUIRED_DOCUMENTS[level] ?? [])],
   };
 }
 
@@ -128,9 +157,9 @@ export function emptyAgentForm() {
  * can do. Letting the browser propose one would mean two admins creating an
  * agent at the same moment could both send the same ID.
  *
- * `documents` rides alongside rather than inside it: the files themselves are
- * uploaded by the agent later, so this is only the list of what was collected
- * at onboarding.
+ * `requiredDocuments` is the checklist the agent meets on their first sign-in,
+ * not files — the agent uploads those themselves, into the dialog their console
+ * opens before it lets them at the dashboard.
  */
 export function buildAgentPayload(form, level) {
   return {
@@ -144,6 +173,6 @@ export function buildAgentPayload(form, level) {
     status: form.status,
     department: form.department,
     assignedServices: form.services,
-    documents: form.documents,
+    requiredDocuments: form.documents,
   };
 }

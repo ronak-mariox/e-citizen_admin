@@ -54,3 +54,25 @@ export function rupees(amount) {
 export function count(value) {
   return new Intl.NumberFormat('en-IN').format(value ?? 0);
 }
+
+/**
+ * An uploaded file path -> a URL the browser can request.
+ *
+ * The API stores paths relative to its own origin (`/uploads/agent-documents/…`),
+ * so moving the API to another host does not invalidate every stored row. That
+ * leaves the panel to rejoin the two, and the only origin it knows is inside
+ * VITE_API_BASE_URL — which carries the /api/v1 prefix that these files sit
+ * outside of, hence the trim.
+ *
+ * The same helper the agent consoles carry (their utils/format.js); kept in
+ * step rather than shared, because these are three separately deployed apps.
+ */
+export function assetUrl(storedPath) {
+  if (!storedPath) return '';
+  if (/^https?:/.test(storedPath)) return storedPath;
+
+  const base = import.meta.env.VITE_API_BASE_URL ?? '';
+  const origin = base.replace(/\/api\/v\d+\/?$/, '').replace(/\/+$/, '');
+
+  return origin + storedPath;
+}
