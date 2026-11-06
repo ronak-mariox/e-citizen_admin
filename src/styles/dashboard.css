@@ -1986,6 +1986,165 @@
   color: var(--color-negative);
 }
 
+/* ---------------------------------------------------- document review --
+   What an agent handed in, on their detail screen, with a verdict per row.
+   This is the second of the two gates a new account passes — until every row
+   here is verified their console holds them on the upload dialog and the API
+   refuses their work routes, so the panel is sized to be read rather than
+   skimmed past. */
+
+.doc__overall {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin: var(--space-5) 0 0;
+  padding: var(--space-4);
+  font-size: var(--text-xs);
+  line-height: 1.5;
+  border: var(--field-border) solid transparent;
+  border-radius: var(--radius-md);
+}
+
+.doc__overall strong {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: 2px;
+  font-size: var(--text-sm);
+}
+
+.doc__overall--ok {
+  color: #076b3f;
+  background-color: rgba(7, 107, 63, 0.08);
+  border-color: rgba(7, 107, 63, 0.25);
+}
+
+.doc__overall--warn {
+  color: #a15c07;
+  background-color: rgba(161, 92, 7, 0.08);
+  border-color: rgba(161, 92, 7, 0.25);
+}
+
+.doc__overall--bad {
+  color: var(--color-negative);
+  background-color: #fef2f2;
+  border-color: #fecaca;
+}
+
+.doc__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: var(--space-5) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* A grid rather than a flex row: the reject box below spans all three columns,
+   which flex-wrap can only fake. */
+.doc__row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: var(--space-3) var(--space-4);
+  padding: var(--space-4);
+  background-color: var(--color-surface);
+  border: var(--field-border) solid var(--color-field-border);
+  border-radius: var(--radius-md);
+}
+
+.doc__main {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.doc__name {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-strong);
+}
+
+.doc__meta {
+  overflow: hidden;
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.doc__reason {
+  font-size: var(--text-xs);
+  color: var(--color-negative);
+}
+
+.doc__status {
+  padding: 2px var(--space-3);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+  border-radius: var(--radius-pill);
+}
+
+.doc__status--pending {
+  color: #a15c07;
+  background-color: rgba(161, 92, 7, 0.12);
+}
+
+.doc__status--verified {
+  color: #076b3f;
+  background-color: rgba(7, 107, 63, 0.12);
+}
+
+.doc__status--rejected {
+  color: var(--color-negative);
+  background-color: rgba(197, 48, 48, 0.12);
+}
+
+.doc__status--missing {
+  color: var(--color-muted);
+  background-color: var(--color-dash-chip);
+}
+
+.doc__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.btn--small {
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-xs);
+  border-radius: var(--radius-sm);
+}
+
+/* Spans the row, so the reason sits under the document it is about rather than
+   squeezed beside the buttons that opened it. */
+.doc__reject {
+  grid-column: 1 / -1;
+  padding-top: var(--space-3);
+  border-top: var(--field-border) solid var(--color-field-border);
+}
+
+.doc__rejectActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+@media (max-width: 720px) {
+  .doc__row {
+    grid-template-columns: 1fr auto;
+  }
+
+  .doc__actions {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+  }
+}
+
 .form__actions {
   display: flex;
   justify-content: flex-end;
@@ -1996,9 +2155,15 @@
 /* Column ratios live with the table they belong to rather than being inlined,
    so a header and its rows cannot drift out of alignment. */
 
+/* Eight columns since Documents joined Status — the widest table here, and the
+   reason .table--agents overrides the 900px floor that fits the other six. */
 .table--agents .table__head,
 .table--agents .table__row {
-  grid-template-columns: 1.4fr 0.8fr 1fr 0.7fr 0.9fr 0.7fr 0.6fr;
+  grid-template-columns: 1.4fr 0.7fr 0.9fr 0.7fr 0.8fr 0.9fr 0.7fr 0.6fr;
+}
+
+.table--agents {
+  min-width: 1060px;
 }
 
 .table--citizens .table__head,
@@ -2006,9 +2171,156 @@
   grid-template-columns: 1.5fr 1fr 1fr 0.7fr 0.9fr 0.6fr;
 }
 
+/* Nine columns: the seven this was drawn for, plus the officer holding it and
+   what it costs — both of which an admin scanning the platform's whole workload
+   is looking for. Like .table--agents it outgrows the 900px floor the narrower
+   tables share, so it carries its own. */
 .table--applications .table__head,
 .table--applications .table__row {
-  grid-template-columns: 0.9fr 1.3fr 1fr 1.1fr 0.7fr 1fr 0.6fr;
+  grid-template-columns: 1fr 1.3fr 1.1fr 0.9fr 0.9fr 0.7fr 0.6fr 1fr 0.7fr;
+}
+
+.table--applications {
+  min-width: 1220px;
+}
+
+/* ---------------------------------------------------------------------------
+   One application, read in full — components/dashboard/ApplicationDetail.jsx.
+
+   Label-over-value pairs rather than a two-column table: the values are wildly
+   uneven (a mobile number beside a paragraph of an address), and a table makes
+   every row as tall as its longest cell. Auto-fit means the same markup is four
+   across on a wide screen and one on a narrow one without a breakpoint.
+   --------------------------------------------------------------------------- */
+.appfacts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-4) var(--space-6);
+  margin-top: var(--space-5);
+}
+
+.appfact__label {
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+  color: var(--color-dash-text);
+}
+
+.appfact__value {
+  margin-top: 2px;
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+  color: var(--color-body);
+  /* An answer can be one long unbroken string — a reference number pasted in,
+     an email — and nothing here may push the card wider than the page. */
+  overflow-wrap: anywhere;
+}
+
+/* A field group from the service's own form. */
+.appsection + .appsection {
+  margin-top: var(--space-6);
+  padding-top: var(--space-5);
+  border-top: var(--field-border) solid var(--color-dash-border);
+}
+
+.appsection__title {
+  margin-top: var(--space-5);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  line-height: var(--leading-xs);
+  color: var(--color-dash-text);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.appsection + .appsection .appsection__title {
+  margin-top: 0;
+}
+
+.appempty {
+  margin-top: var(--space-5);
+  font-size: var(--text-xs);
+  line-height: var(--leading-sm);
+  color: var(--color-dash-text);
+}
+
+/* The history rail. A dot per entry joined by a hairline, so the column reads
+   as a sequence rather than as a stack of unrelated lines. */
+.apptrail {
+  margin-top: var(--space-5);
+  list-style: none;
+}
+
+.apptrail__row {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding: 0 0 var(--space-5) var(--space-5);
+}
+
+/* The line hangs off each row and stops at the last, so it never runs past the
+   final dot into empty space. */
+.apptrail__row::before {
+  content: '';
+  position: absolute;
+  top: 12px;
+  bottom: 0;
+  left: 4px;
+  width: 1px;
+  background-color: var(--color-dash-border);
+}
+
+.apptrail__row:last-child {
+  padding-bottom: 0;
+}
+
+.apptrail__row:last-child::before {
+  display: none;
+}
+
+.apptrail__dot {
+  position: absolute;
+  top: 6px;
+  left: 0;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background-color: var(--color-brand);
+}
+
+.apptrail__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.apptrail__title {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  line-height: var(--leading-sm);
+  color: var(--color-body);
+}
+
+.apptrail__note {
+  margin-top: 2px;
+  font-size: var(--text-xs);
+  line-height: var(--leading-sm);
+  color: var(--color-dash-text);
+  overflow-wrap: anywhere;
+}
+
+.apptrail__when {
+  flex: none;
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+  color: var(--color-dash-text);
+  white-space: nowrap;
+}
+
+/* The detail's header carries two badges rather than buttons, so they sit on
+   the title's line instead of stretching. */
+.page__actions .pill,
+.page__actions .tag {
+  align-self: center;
 }
 
 .table--departments .table__head,

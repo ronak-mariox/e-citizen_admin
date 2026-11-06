@@ -27,6 +27,30 @@ const SEVERITY_TONE = {
   critical: 'red',
 };
 
+/**
+ * Who did it.
+ *
+ * The trail records admins, agents and citizens in one collection, which is
+ * right — a change is a change whoever made it — but "what have citizens been
+ * doing" and "what have my agents been doing" are two different questions and
+ * neither was askable. `agent` covers both levels: an admin asking it does not
+ * mean one tier.
+ */
+const ACTOR_FILTERS = [
+  { key: 'all', label: 'Everyone' },
+  { key: 'citizen', label: 'Citizens' },
+  { key: 'agent', label: 'Agents' },
+  { key: 'admin', label: 'Admins' },
+];
+
+/** The role as it reads on a row — `agent_1` is a database value, not a word. */
+const ROLE_LABEL = {
+  citizen: 'Citizen',
+  agent_1: 'Agent 1',
+  agent_2: 'Agent 2',
+  admin: 'Admin',
+};
+
 const SEARCH_DEBOUNCE_MS = 300;
 const PAGE_SIZE = 20;
 
@@ -44,10 +68,12 @@ export function AuditLogPage() {
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [area, setArea] = useState('all');
+  const [actor, setActor] = useState('all');
   const [page, setPage] = useState(1);
 
   const [logs, setLogs] = useState([]);
   const [areas, setAreas] = useState([]);
+  const [actorCounts, setActorCounts] = useState({});
   const [pagination, setPagination] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
@@ -62,6 +88,11 @@ export function AuditLogPage() {
 
   const changeArea = (value) => {
     setArea(value);
+    setPage(1);
+  };
+
+  const changeActor = (value) => {
+    setActor(value);
     setPage(1);
   };
 
@@ -80,12 +111,13 @@ export function AuditLogPage() {
     setLoadError(null);
 
     auditApi
-      .listAuditLogs({ page, limit: PAGE_SIZE, search: debouncedQuery, area })
+      .listAuditLogs({ page, limit: PAGE_SIZE, search: debouncedQuery, area, actor })
       .then((data) => {
         if (cancelled) return;
 
         setLogs(data.logs);
         setAreas(data.areas ?? []);
+        setActorCounts(data.actorCounts ?? {});
         setPagination(data.pagination);
       })
       .catch((error) => {
@@ -101,7 +133,7 @@ export function AuditLogPage() {
     return () => {
       cancelled = true;
     };
-  }, [page, debouncedQuery, area, reloadToken]);
+  }, [page, debouncedQuery, area, actor, reloadToken]);
 
   const total = pagination?.total ?? logs.length;
 
@@ -142,6 +174,27 @@ export function AuditLogPage() {
               </option>
             ))}
           </select>
+
+          <span className="toolbar__spacer" />
+
+          <div className="segmented" role="group" aria-label="Filter by who acted">
+            {ACTOR_FILTERS.map((filter) => (
+              <button
+                className={
+                  actor === filter.key
+                    ? 'segmented__button segmented__button--active'
+                    : 'segmented__button'
+                }
+                type="button"
+                key={filter.key}
+                aria-pressed={actor === filter.key}
+                onClick={() => changeActor(filter.key)}
+              >
+                {filter.label}
+                <span className="segmented__count">{actorCounts[filter.key] ?? 0}</span>
+              </button>
+            ))}
+          </div>
         </ListToolbar>
 
         <section className="table-shell" aria-label="Audit log">
@@ -168,7 +221,9 @@ export function AuditLogPage() {
                       </span>
                       <span className="person__body">
                         <span className="person__name">{entry.actorName}</span>
-                        <span className="person__meta">{entry.actorRole ?? '—'}</span>
+                        <span className="person__meta">
+                          {ROLE_LABEL[entry.actorRole] ?? entry.actorRole ?? 'System'}
+                        </span>
                       </span>
                     </span>
                   </div>

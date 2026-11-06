@@ -106,8 +106,46 @@ export async function deleteAgent(agentId) {
   return response.data.data.agent;
 }
 
+/**
+ * What one agent has handed in, and what is still outstanding.
+ *
+ * The same shape the agent's own onboarding dialog renders from — labels, the
+ * education variant, and a row per *required* document including the ones with
+ * nothing against them yet. Reading it from the API rather than picking
+ * `documents` out of the agent detail means the review screen and the agent's
+ * dialog cannot describe the same checklist differently.
+ */
+export async function getAgentOnboarding(agentId) {
+  const response = await client.get(`/agents/${agentId}/onboarding`);
+
+  return response.data.data.onboarding;
+}
+
+/**
+ * Verify or reject one document.
+ *
+ * `reason` is required on a rejection and only on one — it is the only thing
+ * the agent is shown, and being refused with no way to read why is the one
+ * outcome that leaves them stuck.
+ *
+ * Verifying the last outstanding document is what unlocks the account: until
+ * then the agent's console holds them on the upload dialog, and the API refuses
+ * their work routes outright. Returns the whole checklist back, so the caller
+ * can redraw from one authoritative answer rather than patching a row.
+ */
+export async function reviewAgentDocument(agentId, documentId, { status, reason } = {}) {
+  const response = await client.patch(`/agents/${agentId}/documents/${documentId}`, {
+    status,
+    reason,
+  });
+
+  return response.data.data.onboarding;
+}
+
 export default {
   createAgent,
+  getAgentOnboarding,
+  reviewAgentDocument,
   updateAgent,
   listAgents,
   getAgent,

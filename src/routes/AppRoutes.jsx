@@ -4,6 +4,8 @@ import LoginPage from '../pages/LoginPage.jsx';
 import ForgotPasswordPage from '../pages/ForgotPasswordPage.jsx';
 import DashboardPage from '../pages/DashboardPage.jsx';
 import AgentsPage from '../pages/AgentsPage.jsx';
+import ApplicationsPage from '../pages/ApplicationsPage.jsx';
+import CitizensPage from '../pages/CitizensPage.jsx';
 import DepartmentsPage from '../pages/DepartmentsPage.jsx';
 import ServicesPage from '../pages/ServicesPage.jsx';
 import AuditLogPage from '../pages/AuditLogPage.jsx';
@@ -15,6 +17,8 @@ import { NAV_ITEMS } from '../constants/navigation.js';
 const BUILT_SECTIONS = [
   '/dashboard',
   '/agents',
+  '/citizens',
+  '/applications',
   '/departments',
   '/services',
   '/audit-log',
@@ -29,6 +33,8 @@ export function AppRoutes() {
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/dashboard" element={<DashboardPage />} />
       <Route path="/agents" element={<AgentsPage />} />
+      <Route path="/citizens" element={<CitizensPage />} />
+      <Route path="/applications" element={<ApplicationsPage />} />
       <Route path="/departments" element={<DepartmentsPage />} />
       <Route path="/services" element={<ServicesPage />} />
       <Route path="/audit-log" element={<AuditLogPage />} />

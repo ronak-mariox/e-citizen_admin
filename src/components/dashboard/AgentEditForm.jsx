@@ -2,7 +2,12 @@ import { useEffect, useState } from 'react';
 
 import Icon from './Icon.jsx';
 import * as servicesApi from '../../api/services.js';
-import { EDIT_STATUS_OPTIONS, findLevel, statusNote } from '../../constants/agentForm.js';
+import {
+  DOCUMENT_OPTIONS,
+  EDIT_STATUS_OPTIONS,
+  findLevel,
+  statusNote,
+} from '../../constants/agentForm.js';
 
 /* Edit an agent — what can be corrected after the account exists.
 
@@ -26,9 +31,17 @@ export function AgentEditForm({ agent, saving = false, onSubmit, onCancel }) {
     mobile: agent.mobile ?? '',
     email: agent.email ?? '',
     services: (agent.assignedServices ?? []).map((service) => service._id ?? service),
+    documents: agent.requiredDocuments ?? [],
     status: agent.status ?? 'active',
     reason: '',
   }));
+
+  /* What the agent has actually handed in, by type — so a checklist row can say
+     whether unticking it would be throwing away a file they already uploaded.
+     Built once rather than searched per row. */
+  const submitted = new Map(
+    (agent.documents ?? []).map((document) => [document.type, document])
+  );
 
   const [services, setServices] = useState([]);
   // An agent with no posting has nothing to load, so it is not "loading" —
@@ -71,6 +84,14 @@ export function AgentEditForm({ agent, saving = false, onSubmit, onCancel }) {
         : [...form.services, id]
     );
 
+  const toggleDocument = (type) =>
+    set(
+      'documents',
+      form.documents.includes(type)
+        ? form.documents.filter((item) => item !== type)
+        : [...form.documents, type]
+    );
+
   const statusChanged = form.status !== agent.status;
 
   const handleSubmit = (event) => {
@@ -82,6 +103,7 @@ export function AgentEditForm({ agent, saving = false, onSubmit, onCancel }) {
         mobile: form.mobile.trim(),
         email: form.email.trim().toLowerCase(),
         assignedServices: form.services,
+        requiredDocuments: form.documents,
       },
       // Left undefined when it did not move, so an edit of someone's phone
       // number does not write a status row into the audit trail.
@@ -208,6 +230,45 @@ export function AgentEditForm({ agent, saving = false, onSubmit, onCancel }) {
             </span>
           </div>
         </div>
+      </section>
+
+      {/* -------------------------------------------------------- documents */}
+      <section className="form__group">
+        <h2 className="form__group-title">Required documents</h2>
+        <p className="form__group-hint">
+          What this agent is asked for when they sign in. Adding one puts the upload dialog back in
+          front of them on their next request; removing one does not delete anything they have
+          already handed in.
+        </p>
+
+        <div className="chips chips--spaced">
+          {DOCUMENT_OPTIONS.map((document) => {
+            const isOn = form.documents.includes(document.value);
+            const held = submitted.get(document.value);
+
+            return (
+              <button
+                className={isOn ? 'chip chip--on' : 'chip'}
+                type="button"
+                key={document.value}
+                aria-pressed={isOn}
+                title={document.hint}
+                onClick={() => toggleDocument(document.value)}
+              >
+                {isOn && <Icon name="check" size={12} />}
+                {document.label}
+                {/* A tick beside a document already on file, so unticking it is
+                    visibly a change to the requirement and not to the file. */}
+                {held && <span className="chip__star">✓</span>}
+              </button>
+            );
+          })}
+        </div>
+
+        <span className="field2__hint">
+          What has actually been handed in, and the Verify and Reject buttons for it, are in the
+          Documents panel below — a verdict there takes effect on its own, not with this form.
+        </span>
       </section>
 
       {/* ----------------------------------------------------------- status */}
