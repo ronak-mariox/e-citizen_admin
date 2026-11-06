@@ -9,16 +9,16 @@
  * Plain divs, no charting dependency — the panels draw their charts by hand
  * too, and one grouped bar chart does not justify a library.
  */
-export function BarChart({ labels, series }) {
+export function BarChart({ labels, series, caption = 'Monthly volume' }) {
   // Shared scale across every series, or a tall bar in one would read as
   // equal to a short bar in another.
   const peak = Math.max(...series.flatMap((line) => line.values), 1);
 
   return (
     <>
-      <div className="bar-chart" role="img" aria-label={describe(labels, series)}>
+      <div className="bar-chart" role="img" aria-label={describe(caption, labels, series)}>
         {labels.map((label, index) => (
-          <div className="bar-chart__col" key={label}>
+          <div className="bar-chart__col" key={`${label}-${index}`}>
             <span className="bar-chart__stack">
               {series.map((line) => (
                 <span
@@ -50,12 +50,12 @@ export function BarChart({ labels, series }) {
 
 /* The bars carry no text, so the whole chart gets one spoken summary rather
    than leaving a screen reader with an unlabelled graphic. */
-function describe(labels, series) {
+function describe(caption, labels, series) {
   const lines = series.map(
     (line) => `${line.label}: ${line.values.map((value, i) => `${labels[i]} ${value}`).join(', ')}`
   );
 
-  return `Monthly volume. ${lines.join('. ')}.`;
+  return `${caption}. ${lines.join('. ')}.`;
 }
 
 export default BarChart;

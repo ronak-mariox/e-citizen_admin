@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import DashboardLayout from '../layouts/DashboardLayout.jsx';
 import Icon from '../components/dashboard/Icon.jsx';
@@ -9,6 +9,7 @@ import * as citizensApi from '../api/citizens.js';
 import { getErrorMessage } from '../api/client.js';
 import { userStatus } from '../constants/statusTone.js';
 import { count, initialsOf } from '../utils/format.js';
+import { useLiveRefresh } from '../hooks/useLiveRefresh.js';
 
 /* Everyone who has signed up, and how much of themselves they have filled in.
 
@@ -54,6 +55,14 @@ export function CitizensPage() {
   const [reloadToken, setReloadToken] = useState(0);
   const reload = () => setReloadToken((token) => token + 1);
 
+  /* Live refetches (useLiveRefresh) run quietly: the rows stay up while they
+     load, and a failed one keeps them rather than swapping in an error. */
+  const quietReload = useRef(false);
+  useLiveRefresh(() => {
+    quietReload.current = true;
+    reload();
+  }, ['citizens']);
+
   // A new search or filter is a new result set, so back to page one — staying
   // on page 3 of a list that now has one page shows nothing.
   const changeQuery = (value) => {
@@ -78,22 +87,26 @@ export function CitizensPage() {
      the user has already moved on from. */
   useEffect(() => {
     let cancelled = false;
+    const quiet = quietReload.current;
+    quietReload.current = false;
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- see above
-    setLoading(true);
-    setLoadError(null);
+    if (!quiet) {
+      setLoading(true);
+      setLoadError(null);
+    }
 
     citizensApi
       .listCitizens({ page, limit: PAGE_SIZE, search: debouncedQuery, status })
       .then((data) => {
         if (cancelled) return;
 
+        setLoadError(null);
         setCitizens(data.citizens);
         setStatusCounts(data.statusCounts ?? {});
         setPagination(data.pagination);
       })
       .catch((error) => {
-        if (cancelled) return;
+        if (cancelled || quiet) return;
 
         setLoadError(getErrorMessage(error));
         setCitizens([]);

@@ -1054,6 +1054,15 @@
   color: var(--color-subtle);
 }
 
+/* For a segmented strip with more options than a toolbar row can hold on one
+   line — the Notifications page's per-type filter, one button per backend
+   NOTIFICATION_TYPE, sitting on its own row rather than a fixed-count row
+   inside a ListToolbar. */
+.segmented--wrap {
+  flex-wrap: wrap;
+  margin-top: 11.25px;
+}
+
 /* --------------------------------------------------------------- tables -- */
 
 .table-shell {
@@ -1412,9 +1421,14 @@
   background-color: rgba(15, 23, 42, 0.45);
 }
 
+/* Never taller than the screen: a long dialog (Pay Agent 2, say) scrolls inside
+   its card instead of running off the top and bottom of a laptop screen. */
 .modal__card {
   width: 100%;
   max-width: 400px;
+  max-height: calc(100dvh - 2 * var(--space-6));
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: var(--space-7);
   text-align: center;
   background-color: var(--color-surface);
@@ -1945,6 +1959,12 @@
   color: var(--tone-red-text);
 }
 
+/* A hint flagging that the field's current value is having no effect —
+   nothing is wrong, but the admin is about to be surprised. */
+.field2__hint--notice {
+  color: var(--tone-amber-text);
+}
+
 /* Multi-select as toggle chips — the lists are short, and a <select multiple>
    gives no hint that ctrl-click is expected. */
 .chips {
@@ -2177,11 +2197,135 @@
    tables share, so it carries its own. */
 .table--applications .table__head,
 .table--applications .table__row {
-  grid-template-columns: 1fr 1.3fr 1.1fr 0.9fr 0.9fr 0.7fr 0.6fr 1fr 0.7fr;
+  grid-template-columns: 1fr 1.3fr 1.1fr 0.9fr 0.9fr 0.7fr 0.6fr 0.8fr 1fr 0.7fr;
 }
 
 .table--applications {
-  min-width: 1220px;
+  min-width: 1310px;
+}
+
+/* Support tickets: the subject gets the room, since it is what an admin reads
+   to decide which ticket to open first. */
+.table--tickets .table__head,
+.table--tickets .table__row {
+  grid-template-columns: 1fr 1.3fr 1.8fr 0.8fr 1fr 0.6fr 1fr 0.8fr;
+}
+
+.table--tickets {
+  min-width: 1150px;
+}
+
+/* "Citizen replied" under a subject — the row that needs an answer. */
+.ticket__flag {
+  font-weight: 600;
+  color: var(--tone-orange-text);
+}
+
+/* ---------------------------------------------------------------------------
+   Ticket detail — the Manage card and the conversation thread.
+   --------------------------------------------------------------------------- */
+.ticket-manage {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-5);
+  margin-top: var(--space-5);
+}
+
+.ticket__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+}
+
+.ticket__notice {
+  margin-top: var(--space-4);
+}
+
+.ticket__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-right: auto;
+  font-size: var(--text-sm);
+  color: var(--color-body);
+  cursor: pointer;
+}
+
+.thread {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+  list-style: none;
+}
+
+/* The citizen on the left, the desk on the right, notes full width in amber —
+   so who said what reads from the layout before a name is read. */
+.thread__msg {
+  max-width: 78%;
+  padding: var(--space-4) var(--space-5);
+  border: var(--field-border) solid var(--color-dash-border);
+  border-radius: var(--radius-md);
+}
+
+.thread__msg--citizen {
+  align-self: flex-start;
+  background-color: var(--color-dash-chip);
+}
+
+.thread__msg--admin {
+  align-self: flex-end;
+  background-color: var(--tone-blue-bg);
+  border-color: transparent;
+}
+
+.thread__msg--internal {
+  align-self: stretch;
+  max-width: none;
+  background-color: var(--tone-amber-bg);
+  border-style: dashed;
+}
+
+.thread__meta {
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+  color: var(--color-dash-text);
+}
+
+.thread__meta strong {
+  font-weight: 600;
+  color: var(--color-body);
+}
+
+.thread__badge {
+  margin-left: var(--space-2);
+  padding: 1px var(--space-2);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--tone-amber-text);
+  border: 1px solid currentColor;
+  border-radius: var(--radius-pill);
+}
+
+.thread__text {
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+  color: var(--color-body);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.thread__composer {
+  margin-top: var(--space-6);
+  padding-top: var(--space-5);
+  border-top: var(--field-border) solid var(--color-dash-border);
 }
 
 /* ---------------------------------------------------------------------------
@@ -2206,13 +2350,21 @@
 }
 
 .appfact__value {
-  margin-top: 2px;
+  /* <dd> carries a 40px browser indent the global reset does not clear. */
+  margin: 2px 0 0;
   font-size: var(--text-sm);
   line-height: var(--leading-sm);
   color: var(--color-body);
   /* An answer can be one long unbroken string — a reference number pasted in,
      an email — and nothing here may push the card wider than the page. */
   overflow-wrap: anywhere;
+}
+
+/* The SLA fact once it has run out — the one value in this list where the
+   plain colour would bury the thing the card exists to flag. */
+.appfact__value--danger {
+  font-weight: 600;
+  color: var(--color-danger);
 }
 
 /* A field group from the service's own form. */
@@ -2241,6 +2393,75 @@
   font-size: var(--text-xs);
   line-height: var(--leading-sm);
   color: var(--color-dash-text);
+}
+
+/* An Agent 2's ask for more time, and the admin's own Approve/Reject on it —
+   the one genuinely interactive thing on an otherwise read-only screen, see
+   ApplicationDetail.jsx's own note on why. */
+.extreq__list {
+  margin-top: var(--space-5);
+  list-style: none;
+}
+
+.extreq + .extreq {
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: var(--field-border) solid var(--color-dash-border);
+}
+
+.extreq__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.extreq__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.extreq__title {
+  font-size: var(--text-sm);
+  color: var(--color-body);
+}
+
+.extreq__reason {
+  font-size: var(--text-xs);
+  line-height: var(--leading-sm);
+  color: var(--color-dash-text);
+  overflow-wrap: anywhere;
+}
+
+.extreq__meta {
+  font-size: var(--text-xs);
+  color: var(--color-subtle);
+}
+
+.extreq__resolution {
+  margin-top: var(--space-3);
+  font-size: var(--text-xs);
+  line-height: var(--leading-sm);
+  color: var(--color-dash-text);
+}
+
+.extreq__actions {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+/* The place Approve opens — an admin adjusting the days before granting them
+   is a normal outcome, not an edge case, so this is a real form rather than
+   an instant action. */
+.extreq__grant {
+  max-width: 220px;
+  margin-top: var(--space-4);
+  padding: var(--space-4);
+  background-color: var(--color-tile-soft);
+  border-radius: var(--radius-md);
 }
 
 /* The history rail. A dot per entry joined by a hairline, so the column reads
@@ -2316,6 +2537,33 @@
   white-space: nowrap;
 }
 
+/* Choosing an agent — components/dashboard/AssignmentPanel.jsx. Only shown
+   once an admin asks to change the assignment, so it is a small form rather
+   than part of the card's resting state. */
+.assign {
+  margin-top: var(--space-5);
+  padding-top: var(--space-5);
+  border-top: var(--field-border) solid var(--color-dash-border);
+  display: grid;
+  gap: var(--space-4);
+}
+
+.assign__field {
+  display: grid;
+  gap: var(--space-1);
+}
+
+/* The select and the input are the toolbar's, which are already sized for a
+   row of controls; here they run the width of the card. */
+.assign__field .toolbar__select {
+  width: 100%;
+}
+
+.assign__actions {
+  display: flex;
+  gap: var(--space-3);
+}
+
 /* The detail's header carries two badges rather than buttons, so they sit on
    the title's line instead of stretching. */
 .page__actions .pill,
@@ -2336,6 +2584,50 @@
 .table--audit .table__head,
 .table--audit .table__row {
   grid-template-columns: 1fr 1.2fr 1.3fr 1.6fr 0.7fr;
+}
+
+.table--notifications .table__head,
+.table--notifications .table__row {
+  grid-template-columns: 0.7fr 1fr 2.6fr 0.9fr;
+}
+
+/* A left accent rather than a bolder background — a whole row tinted would
+   compete with the type dot for attention; a stripe just marks the row as
+   one still owed a look. */
+.table--notifications .table__row--unread {
+  box-shadow: inset 3px 0 0 var(--color-brand);
+}
+
+.ntf-open {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 0;
+  font: inherit;
+  text-align: left;
+  background: none;
+  border: 0;
+}
+
+button.ntf-open {
+  cursor: pointer;
+}
+
+.ntf-open__title {
+  font-weight: 500;
+  color: var(--color-body);
+}
+
+button.ntf-open:hover .ntf-open__title {
+  color: var(--color-brand);
+}
+
+.ntf-open__body {
+  font-size: var(--text-xs);
+  line-height: var(--leading-sm);
+  color: var(--color-dash-text);
+  overflow-wrap: anywhere;
 }
 
 /* An audit entry's kind — added, altered, taken away — carried by a dot so the
@@ -2372,6 +2664,10 @@
 
 .audit-action--blue .audit-action__dot {
   background-color: var(--tone-blue-dot);
+}
+
+.audit-action--slate .audit-action__dot {
+  background-color: var(--tone-slate-dot);
 }
 
 /* ----------------------------------------------------------- responsive -- */
@@ -2495,5 +2791,138 @@
 @media (max-width: 620px) {
   .stat-grid {
     grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Reports — the range toolbar, the report's own notes, and the stale state
+   while a new range loads over the old one.
+   --------------------------------------------------------------------------- */
+.report-toolbar {
+  flex-wrap: wrap;
+  margin-top: var(--space-5);
+}
+
+.report-toolbar__date {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-dash-text);
+}
+
+.report {
+  transition: opacity 120ms ease;
+}
+
+/* Kept on screen rather than blanked, so a new range does not flash empty. */
+.report--stale {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.report__notes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
+}
+
+.report__note {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  font-size: var(--text-xs);
+  line-height: var(--leading-sm);
+  color: var(--tone-amber-text);
+  background-color: var(--tone-amber-bg);
+  border-radius: var(--radius-md);
+}
+
+.report__note svg {
+  flex: none;
+  margin-top: 2px;
+}
+
+.report__table {
+  margin-top: var(--space-6);
+}
+
+.report__table-head {
+  padding: var(--space-5) var(--space-6) var(--space-4);
+}
+
+/* ---------------------------------------------------------------------------
+   Company wallet and settlements.
+   --------------------------------------------------------------------------- */
+.settle__toolbar {
+  margin-top: var(--space-6);
+}
+
+.settle__notice {
+  margin-top: var(--space-5);
+}
+
+.wallet__in {
+  font-weight: 600;
+  color: var(--tone-green-text);
+}
+
+.wallet__out {
+  font-weight: 600;
+  color: var(--tone-red-text);
+}
+
+/* The split dialog — wider than a confirm, with a statement and a form. */
+.modal__card.payout {
+  width: min(640px, calc(100vw - 32px));
+  max-width: none;
+  text-align: left;
+}
+
+.payout__facts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
+  padding: var(--space-4) var(--space-5);
+  background-color: var(--color-dash-chip);
+  border-radius: var(--radius-md);
+}
+
+.payout__facts > div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  font-size: var(--text-sm);
+}
+
+.payout__facts dt {
+  color: var(--color-dash-text);
+}
+
+.payout__facts dd {
+  margin: 0;
+  color: var(--color-body);
+}
+
+.payout__facts-sum {
+  padding-top: var(--space-2);
+  border-top: var(--field-border) solid var(--color-dash-border);
+  font-weight: 600;
+}
+
+.payout__fields {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+}
+
+/* Side by side where there is room, so the dialog is half as tall. */
+@media (min-width: 640px) {
+  .payout__fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
   }
 }

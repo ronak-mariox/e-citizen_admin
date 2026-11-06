@@ -24,7 +24,6 @@ export const NAV_GROUPS = [
     items: [
       { label: 'Agents', icon: 'agents', to: '/agents' },
       { label: 'Citizens', icon: 'citizens', to: '/citizens' },
-      { label: 'Administrators', icon: 'admins', to: '/administrators' },
     ],
   },
   {
@@ -47,7 +46,7 @@ export const NAV_GROUPS = [
     id: 'finance',
     title: 'Finance',
     items: [
-      { label: 'Wallets & Recharges', icon: 'wallet', to: '/wallets' },
+      { label: 'Company Wallet', icon: 'wallet', to: '/wallets' },
       { label: 'Settlements', icon: 'settlements', to: '/settlements' },
     ],
   },
@@ -56,7 +55,12 @@ export const NAV_GROUPS = [
     title: 'System',
     items: [
       { label: 'Reports', icon: 'reports', to: '/reports' },
+      { label: 'Notifications', icon: 'bell', to: '/notifications' },
       { label: 'Audit Log', icon: 'audit', to: '/audit-log' },
+      // Third-party integration credentials (SMS/Email/Payment/Firebase)
+      // live inside this page's own System Config tab — see
+      // components/settings/IntegrationsPanel.jsx — rather than as sidebar
+      // entries of their own.
       { label: 'Settings', icon: 'settings', to: '/settings' },
     ],
   },

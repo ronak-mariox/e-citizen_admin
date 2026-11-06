@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import DashboardLayout from '../layouts/DashboardLayout.jsx';
 import Icon from '../components/dashboard/Icon.jsx';
@@ -10,6 +11,7 @@ import * as applicationsApi from '../api/applications.js';
 import { getErrorMessage } from '../api/client.js';
 import { APPLICATION_STATUS_TONE, applicationStatus, priority } from '../constants/statusTone.js';
 import { initialsOf, rupees } from '../utils/format.js';
+import { useLiveRefresh } from '../hooks/useLiveRefresh.js';
 
 /* Every application on the platform, whoever filed it.
 
@@ -94,6 +96,7 @@ const sinceThen = (value) => {
 };
 
 export function ApplicationsPage() {
+  const [params, setParams] = useSearchParams();
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [status, setStatus] = useState('all');
@@ -110,9 +113,55 @@ export function ApplicationsPage() {
      the detail can draw its header immediately and only the body waits on the
      fetch. Null while browsing the table. */
   const [opened, setOpened] = useState(null);
+  const [openError, setOpenError] = useState(null);
+
+  /* A notification (extension requested, say) links here with `?applicationId=`
+     rather than knowing this page's internal state shape. One fetch resolves it
+     into the same full record a row-click would eventually land on — a little
+     more than a bare row needs, but simpler than teaching the table to find or
+     fake one. The param is cleared once handled so Back does not reopen it from
+     a stale URL, and reload does not refetch something already dealt with. */
+  useEffect(() => {
+    const applicationId = params.get('applicationId');
+    if (!applicationId) return undefined;
+
+    let cancelled = false;
+
+    applicationsApi
+      .getApplication(applicationId)
+      .then((data) => {
+        if (!cancelled) setOpened(data);
+      })
+      .catch((error) => {
+        if (!cancelled) setOpenError(getErrorMessage(error));
+      });
+
+    setParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        next.delete('applicationId');
+        return next;
+      },
+      { replace: true }
+    );
+
+    return () => {
+      cancelled = true;
+    };
+    // Only ever meant to run for the param this page was opened with.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [reloadToken, setReloadToken] = useState(0);
   const reload = () => setReloadToken((token) => token + 1);
+
+  /* Live refetches (useLiveRefresh) run quietly: the rows stay up while they
+     load, and a failed one keeps them rather than swapping in an error. */
+  const quietReload = useRef(false);
+  useLiveRefresh(() => {
+    quietReload.current = true;
+    reload();
+  }, ['applications']);
 
   // A new search or filter is a new result set, so back to page one — staying
   // on page 3 of a list that now has one page shows nothing.
@@ -143,10 +192,13 @@ export function ApplicationsPage() {
      the user has already moved on from. */
   useEffect(() => {
     let cancelled = false;
+    const quiet = quietReload.current;
+    quietReload.current = false;
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- see above
-    setLoading(true);
-    setLoadError(null);
+    if (!quiet) {
+      setLoading(true);
+      setLoadError(null);
+    }
 
     applicationsApi
       .listApplications({
@@ -159,12 +211,13 @@ export function ApplicationsPage() {
       .then((data) => {
         if (cancelled) return;
 
+        setLoadError(null);
         setApplications(data.applications);
         setStatusCounts(data.statusCounts ?? {});
         setPagination(data.pagination);
       })
       .catch((error) => {
-        if (cancelled) return;
+        if (cancelled || quiet) return;
 
         setLoadError(getErrorMessage(error));
         setApplications([]);
@@ -223,6 +276,13 @@ export function ApplicationsPage() {
           </div>
         </div>
 
+        {openError && (
+          <p className="notice notice--error" role="alert">
+            <Icon name="alert" size={15} />
+            Could not open that application — {openError}
+          </p>
+        )}
+
         <ListToolbar
           value={query}
           onChange={changeQuery}
@@ -274,6 +334,7 @@ export function ApplicationsPage() {
                 <div role="columnheader">Assigned To</div>
                 <div role="columnheader">Fee</div>
                 <div role="columnheader">Priority</div>
+                <div role="columnheader">Extension Needed</div>
                 <div role="columnheader">Status</div>
                 <div role="columnheader" className="table__cell--end">
                   Updated
@@ -331,8 +392,19 @@ export function ApplicationsPage() {
                         the normal state of a fresh application — so this says
                         "Unassigned" rather than going blank, which would read
                         as missing data. */}
-                    <div className="table__cell table__muted table__truncate" role="cell">
-                      {application.assignedAgent?.name ?? (
+                    <div className="table__cell table__truncate" role="cell">
+                      {application.assignedAgent?.name ? (
+                        <span className="person__body">
+                          <span className="person__name">{application.assignedAgent.name}</span>
+                          {/* How they came to have it — the platform's own
+                              choice, or an admin's. */}
+                          <span className="person__meta">
+                            {application.assignmentType === 'MANUAL'
+                              ? 'Assigned manually'
+                              : 'Assigned automatically'}
+                          </span>
+                        </span>
+                      ) : (
                         <span className="table__muted">Unassigned</span>
                       )}
                     </div>
@@ -351,6 +423,17 @@ export function ApplicationsPage() {
 
                     <div className="table__cell" role="cell">
                       <PriorityTag label={urgency.label} tone={urgency.tone} />
+                    </div>
+
+                    {/* An Agent 2 extension request still waiting on an
+                        admin's Approve/Reject — see ApplicationDetail.jsx.
+                        Yes is a flag to act on, not just a fact, hence the
+                        red rather than a neutral tone. */}
+                    <div className="table__cell" role="cell">
+                      <StatusPill
+                        label={application.extensionNeeded ? 'Yes' : 'No'}
+                        tone={application.extensionNeeded ? 'red' : 'slate'}
+                      />
                     </div>
 
                     <div className="table__cell" role="cell">

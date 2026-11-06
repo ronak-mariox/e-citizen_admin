@@ -1,0 +1,194 @@
+/* Integrations — Settings › System Config's own tab-within-a-tab, one for
+   each of SMS / Email / Payment / Firebase.
+
+   Built almost entirely from dashboard.css's own primitives (.card, .btn,
+   .notice, .field2, .form__grid, .settings-tab) — this file only adds the
+   pieces those don't already cover: the sub-tab strip, the panel head, the
+   masked "Current Configuration" grid and the Active/Inactive toggle. */
+
+.int-panel {
+  margin-top: var(--space-5);
+}
+
+.int-subtabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+/* .settings-tab already draws the pill and its active state (see
+   settings.css) — this only trims the padding a notch for a strip nested
+   inside a tab rather than sitting under the page title. */
+.int-subtab {
+  padding: 6.75px 12.701px;
+}
+
+.int-panel__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-5);
+}
+
+.int-panel__title {
+  font-size: var(--text-md);
+  font-weight: 700;
+  line-height: var(--leading-lg);
+  color: var(--color-body);
+  font-variation-settings: 'opsz' 14;
+}
+
+.int-panel__subtitle {
+  margin-top: 1.875px;
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+  color: var(--color-dash-text);
+}
+
+/* Two columns rather than .form__grid's default three — these forms have
+   2-5 fields, and three columns leaves an odd one stranded on its own row
+   more often than it fills the grid evenly. Its own modifier rather than
+   overriding `.form__grid` itself, which ProfilePage and the service forms
+   already rely on staying three-wide. */
+.form__grid.int-form__grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* -------------------------------------------------------- current config */
+
+.int-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+}
+
+.int-summary__cell {
+  padding: 11.951px 14.992px;
+  background-color: var(--color-dash-chip);
+  border-radius: var(--radius-md);
+}
+
+.int-summary__label {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--color-dash-text);
+}
+
+.int-summary__value {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: 3.75px;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  font-family: var(--font-mono);
+  color: var(--color-body);
+  word-break: break-all;
+}
+
+.int-summary__status {
+  font-family: inherit;
+  font-weight: 600;
+}
+
+.int-summary__status--active {
+  color: var(--tone-green-text);
+}
+
+.int-summary__status--inactive {
+  color: var(--color-dash-text);
+}
+
+.int-summary__empty {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+  font-size: var(--text-sm);
+  color: var(--color-dash-text);
+}
+
+@media (max-width: 900px) {
+  .int-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .int-summary,
+  .int-form__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* --------------------------------------------------------------- toggle */
+
+.int-toggle {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 6.326px 14.99px;
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  line-height: var(--leading-sm);
+  border: 0;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: opacity 120ms ease;
+}
+
+.int-toggle--on {
+  color: var(--tone-green-text);
+  background-color: var(--tone-green-bg);
+}
+
+.int-toggle--off {
+  color: var(--color-dash-text);
+  background-color: var(--color-dash-chip);
+}
+
+.int-toggle:hover:not(:disabled) {
+  opacity: 0.8;
+}
+
+.int-toggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* ------------------------------------------------------------- test sms */
+
+.int-test {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+.int-test .field2__input {
+  flex: 1;
+}
+
+.int-test .btn {
+  flex: none;
+}
+
+/* ---------------------------------------------------------- webhook note */
+
+.int-webhook code {
+  display: inline-block;
+  margin: 3.75px 0;
+  padding: 2px 7.5px;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-hint-text);
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: var(--radius-sm);
+  word-break: break-all;
+}

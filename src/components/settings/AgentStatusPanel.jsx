@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import Icon from '../dashboard/Icon.jsx';
 import ConfirmDialog from '../dashboard/ConfirmDialog.jsx';
@@ -10,6 +10,7 @@ import { getErrorMessage } from '../../api/client.js';
 import { ACCOUNT_STATUS_OPTIONS } from '../../constants/settings.js';
 import { userStatus } from '../../constants/statusTone.js';
 import { initialsOf } from '../../utils/format.js';
+import { useLiveRefresh } from '../../hooks/useLiveRefresh.js';
 
 /* Suspend or reactivate an agent.
 
@@ -43,6 +44,14 @@ export function AgentStatusPanel({ onBack }) {
 
   const [reloadToken, setReloadToken] = useState(0);
 
+  /* Live refetches (useLiveRefresh) run quietly: the rows stay up while they
+     load, and a failed one keeps them rather than swapping in an error. */
+  const quietReload = useRef(false);
+  useLiveRefresh(() => {
+    quietReload.current = true;
+    setReloadToken((token) => token + 1);
+  }, ['agents']);
+
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedQuery(query), SEARCH_DEBOUNCE_MS);
 
@@ -51,19 +60,24 @@ export function AgentStatusPanel({ onBack }) {
 
   useEffect(() => {
     let cancelled = false;
+    const quiet = quietReload.current;
+    quietReload.current = false;
 
-    // The spinner has to appear when the request starts, not when it finishes.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setLoading(true);
-    setLoadError(null);
+    if (!quiet) {
+      // The spinner has to appear when the request starts, not when it finishes.
+      setLoading(true);
+      setLoadError(null);
+    }
 
     agentsApi
       .listAgents({ limit: 50, search: debouncedQuery })
       .then((data) => {
-        if (!cancelled) setAgents(data.agents);
+        if (cancelled) return;
+        setAgents(data.agents);
+        setLoadError(null);
       })
       .catch((err) => {
-        if (!cancelled) {
+        if (!cancelled && !quiet) {
           setLoadError(getErrorMessage(err));
           setAgents([]);
         }

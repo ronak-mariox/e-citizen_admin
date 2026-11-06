@@ -9,15 +9,11 @@ import MeterList from '../components/dashboard/MeterList.jsx';
 import ActivityFeed from '../components/dashboard/ActivityFeed.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import * as auditApi from '../api/audit.js';
+import * as adminDashboardApi from '../api/adminDashboard.js';
 import { getErrorMessage } from '../api/client.js';
-import { displayName } from '../utils/format.js';
-import {
-  ATTENTION_ITEMS,
-  DEPARTMENT_LOAD,
-  STATUS_BREAKDOWN,
-  STAT_CARDS,
-  VOLUME_CHART,
-} from '../constants/dashboard.js';
+import { useLiveRefresh } from '../hooks/useLiveRefresh.js';
+import { displayName, rupees } from '../utils/format.js';
+import { DEPARTMENT_LOAD, STATUS_BREAKDOWN, STAT_CARDS, VOLUME_CHART } from '../constants/dashboard.js';
 
 function greeting(hour = new Date().getHours()) {
   if (hour < 12) return 'Good morning';
@@ -25,9 +21,10 @@ function greeting(hour = new Date().getHours()) {
   return 'Good evening';
 }
 
-/* Recent activity is the live section of this screen — it reads the audit trail
-   the API actually records, while the tiles and charts above are still fixtures
-   from constants/dashboard.js.
+/* Recent activity is the live section below the tiles — it reads the audit
+   trail the API actually records. "Needs Your Attention" is built from the
+   same live `stats` the tiles use (see attentionItemsFrom below). The two
+   charts further down are still fixtures from constants/dashboard.js.
 
    Six rows: enough to see what has been happening without turning the dashboard
    into a second copy of /audit-log, which is one click away and pages properly. */
@@ -86,6 +83,105 @@ const toFeedItem = (entry) => ({
   time: since(entry.createdAt),
 });
 
+/* The live figure behind each STAT_CARDS tile. */
+function statOverrides(stats) {
+  const inactiveAgents = Math.max(stats.agentsTotal - stats.agentsOnline, 0);
+
+  return {
+    'applications-today': {
+      value: String(stats.applicationsToday),
+      hint: `Across ${stats.activeDepartments} active department${stats.activeDepartments === 1 ? '' : 's'}`,
+    },
+    'pending-review': { value: String(stats.awaitingVerification) },
+    'sla-breach': { value: String(stats.slaBreached) },
+    'active-agents': {
+      value: `${stats.agentsOnline} / ${stats.agentsTotal}`,
+      hint: `${inactiveAgents} inactive`,
+    },
+    citizens: { value: stats.registeredCitizens.toLocaleString('en-IN') },
+    tickets: {
+      value: String(stats.openTickets ?? 0),
+      hint: `${stats.unassignedTickets ?? 0} unassigned`,
+    },
+    recharges: {
+      value: rupees((stats.walletBalance ?? 0) / 100),
+      hint: 'Balance held',
+    },
+    settlements: {
+      value: String(stats.payoutsDue ?? 0),
+      hint: `${rupees((stats.payoutsDueAmount ?? 0) / 100)} owed to Agent 2`,
+    },
+  };
+}
+
+const LIVE_STAT_IDS = [
+  'applications-today',
+  'pending-review',
+  'sla-breach',
+  'active-agents',
+  'citizens',
+  'tickets',
+  'recharges',
+  'settlements',
+];
+
+/**
+ * "Needs Your Attention", built from the same `stats` the tiles above use —
+ * never a fixture. `stats.slaBreached` is the only figure here with a real
+ * backend behind it (wallet recharges, tickets and agent activation have
+ * none — see constants/dashboard.js's own note), so this is the only entry
+ * that can ever appear, and only while the count is actually above zero.
+ */
+function attentionItemsFrom(stats) {
+  if (!stats) return [];
+
+  const items = [];
+
+  if (stats.slaBreached) {
+    items.push({
+      id: 'sla-breach',
+      icon: 'alert',
+      accent: '#fb2c36',
+      title: `${stats.slaBreached} application${stats.slaBreached === 1 ? '' : 's'} past their SLA`,
+      meta: 'Review and reassign before they slip further',
+      to: '/applications',
+    });
+  }
+
+  if (stats.unassignedTickets) {
+    items.push({
+      id: 'unassigned-tickets',
+      icon: 'tickets',
+      accent: '#ff6900',
+      title: `${stats.unassignedTickets} support ticket${stats.unassignedTickets === 1 ? '' : 's'} with nobody on ${stats.unassignedTickets === 1 ? 'it' : 'them'}`,
+      meta: 'Pick them up or assign them to an admin',
+      to: '/tickets',
+    });
+  }
+
+  return items;
+}
+
+/** STAT_CARDS with the live figures dropped in where this system has them.
+    Still loading or the request failed: those five tiles show a dash rather
+    than the fixture's number, which would read as a real — and possibly very
+    wrong — figure. None of the live tiles have a real trend to compare
+    against yet either, so the fixture's up/down chip is always dropped. */
+function withLiveStats(stats, statsError) {
+  const overrides = stats ? statOverrides(stats) : {};
+  const placeholderHint = statsError ? 'Could not load' : 'Loading…';
+
+  return STAT_CARDS.map((card) => {
+    if (!LIVE_STAT_IDS.includes(card.id)) return card;
+
+    const { trend: _trend, hint, ...rest } = card;
+    /* "Loading…" only until the figures land — a tile whose override sets no
+       hint of its own goes back to the card's, rather than saying Loading
+       forever beside a real number. */
+    return { ...rest, value: '—', hint: stats ? hint : placeholderHint, ...overrides[card.id] };
+  });
+}
+
 export function DashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -97,30 +193,69 @@ export function DashboardPage() {
   const [activity, setActivity] = useState([]);
   const [activityLoading, setActivityLoading] = useState(true);
   const [activityError, setActivityError] = useState(null);
-  const [reloadToken, setReloadToken] = useState(0);
+  const [stats, setStats] = useState(null);
+  const [statsError, setStatsError] = useState(null);
+  const [reloadToken, setReloadToken] = useState({ count: 0, quiet: false });
 
-  // Refresh pulls the trail again. The tiles and charts have nothing to refetch
-  // yet — they are fixtures until the dashboard API exists.
-  const handleRefresh = () => setReloadToken((token) => token + 1);
+  // Refresh pulls the trail and the tiles again. The charts below them are
+  // still fixtures until they get their own API.
+  const handleRefresh = () => setReloadToken((token) => ({ count: token.count + 1, quiet: false }));
+
+  /* Any change elsewhere refetches quietly: the tiles and feed keep what they
+     show until the new figures land, and a failed refetch keeps them. */
+  useLiveRefresh(() => setReloadToken((token) => ({ count: token.count + 1, quiet: true })));
+
+  /* The stat tiles' own fetch, independent of the activity feed below — one
+     failing should not take the other down with it. */
+  useEffect(() => {
+    let cancelled = false;
+    const { quiet } = reloadToken;
+
+    if (!quiet) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setStats(null);
+      setStatsError(null);
+    }
+
+    adminDashboardApi
+      .getDashboardStats()
+      .then((data) => {
+        if (cancelled) return;
+        setStats(data);
+        setStatsError(null);
+      })
+      .catch((error) => {
+        if (!cancelled && !quiet) setStatsError(getErrorMessage(error));
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadToken]);
 
   /* Fetching is this screen synchronising itself with the API, which is what an
      effect is for. `cancelled` guards against two refreshes landing out of
      order and leaving the older list on screen. */
   useEffect(() => {
     let cancelled = false;
+    const { quiet } = reloadToken;
 
-    // The spinner has to appear when the request starts, not when it finishes.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setActivityLoading(true);
-    setActivityError(null);
+    if (!quiet) {
+      // The spinner has to appear when the request starts, not when it finishes.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setActivityLoading(true);
+      setActivityError(null);
+    }
 
     auditApi
       .listAuditLogs({ page: 1, limit: ACTIVITY_LIMIT })
       .then((data) => {
-        if (!cancelled) setActivity(data.logs.map(toFeedItem));
+        if (cancelled) return;
+        setActivity(data.logs.map(toFeedItem));
+        setActivityError(null);
       })
       .catch((error) => {
-        if (cancelled) return;
+        if (cancelled || quiet) return;
 
         setActivityError(getErrorMessage(error));
         setActivity([]);
@@ -160,7 +295,7 @@ export function DashboardPage() {
         {/* Each tile is a way in, not just a number — the figure an admin cares
             about is always the one they are about to go act on. */}
         <div className="stat-grid">
-          {STAT_CARDS.map((card) => (
+          {withLiveStats(stats, statsError).map((card) => (
             <StatCard key={card.id} {...card} onClick={() => navigate(card.to)} />
           ))}
         </div>
@@ -200,7 +335,7 @@ export function DashboardPage() {
             </div>
 
             <div className="feed">
-              {ATTENTION_ITEMS.map((item) => (
+              {attentionItemsFrom(stats).map((item) => (
                 <button
                   className="feed__row feed__row--link"
                   type="button"
@@ -223,6 +358,37 @@ export function DashboardPage() {
                 </button>
               ))}
             </div>
+
+            {/* Loading, failed and genuinely-nothing-to-flag are three
+                different situations — same three-way split as Recent
+                Activity below. */}
+            {!stats && !statsError && (
+              <div className="empty">
+                <span className="empty__icon">
+                  <Icon name="refresh" size={20} />
+                </span>
+                <p className="empty__title">Loading…</p>
+              </div>
+            )}
+
+            {statsError && (
+              <div className="empty">
+                <span className="empty__icon">
+                  <Icon name="alert" size={20} />
+                </span>
+                <p className="empty__title">Could not load</p>
+                <p className="empty__text">{statsError}</p>
+              </div>
+            )}
+
+            {stats && !statsError && attentionItemsFrom(stats).length === 0 && (
+              <div className="empty">
+                <span className="empty__icon">
+                  <Icon name="check" size={20} />
+                </span>
+                <p className="empty__title">Nothing needs your attention right now</p>
+              </div>
+            )}
           </section>
 
           <section className="card">

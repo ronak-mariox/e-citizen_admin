@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import DashboardLayout from '../layouts/DashboardLayout.jsx';
 import Icon from '../components/dashboard/Icon.jsx';
@@ -17,6 +17,7 @@ import { AGENT_LEVEL_LABEL } from '../constants/records.js';
 import { findLevel } from '../constants/agentForm.js';
 import { agentVerification, userStatus } from '../constants/statusTone.js';
 import { initialsOf } from '../utils/format.js';
+import { useLiveRefresh } from '../hooks/useLiveRefresh.js';
 
 /* The agent roster, and where agents are created.
 
@@ -72,6 +73,14 @@ export function AgentsPage() {
   const [reloadToken, setReloadToken] = useState(0);
   const reload = () => setReloadToken((token) => token + 1);
 
+  /* Live refetches (useLiveRefresh) run quietly: the rows stay up while they
+     load, and a failed one keeps them rather than swapping in an error. */
+  const quietReload = useRef(false);
+  useLiveRefresh(() => {
+    quietReload.current = true;
+    reload();
+  }, ['agents']);
+
   // A new search or filter is a new result set, so back to page one — staying
   // on page 3 of a list that now has one page shows nothing.
   const changeQuery = (value) => {
@@ -101,10 +110,13 @@ export function AgentsPage() {
      the user has already moved on from. */
   useEffect(() => {
     let cancelled = false;
+    const quiet = quietReload.current;
+    quietReload.current = false;
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- see above
-    setLoading(true);
-    setLoadError(null);
+    if (!quiet) {
+      setLoading(true);
+      setLoadError(null);
+    }
 
     agentsApi
       .listAgents({
@@ -117,12 +129,13 @@ export function AgentsPage() {
       .then((data) => {
         if (cancelled) return;
 
+        setLoadError(null);
         setAgents(data.agents);
         setStatusCounts(data.statusCounts ?? {});
         setPagination(data.pagination);
       })
       .catch((error) => {
-        if (cancelled) return;
+        if (cancelled || quiet) return;
 
         setLoadError(getErrorMessage(error));
         setAgents([]);

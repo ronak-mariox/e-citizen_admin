@@ -75,8 +75,33 @@ export const PRIORITY_TONE = {
   urgent: { label: 'Urgent', tone: 'red' },
 };
 
+/** Support ticket lifecycle — TICKET_STATUS. Amber is "someone needs to act". */
+export const TICKET_STATUS_TONE = {
+  open: { label: 'Open', tone: 'amber' },
+  assigned: { label: 'Assigned', tone: 'blue' },
+  in_progress: { label: 'In Progress', tone: 'violet' },
+  waiting_on_citizen: { label: 'Waiting on Citizen', tone: 'orange' },
+  resolved: { label: 'Resolved', tone: 'green' },
+  closed: { label: 'Closed', tone: 'slate' },
+  reopened: { label: 'Reopened', tone: 'red' },
+};
+
+/** TICKET_CATEGORY, as the console names them. */
+export const TICKET_CATEGORY_LABEL = {
+  application: 'Application',
+  document: 'Documents',
+  payment: 'Payment',
+  wallet: 'Wallet',
+  settlement: 'Settlement',
+  technical: 'Technical',
+  dispute: 'Dispute',
+  account: 'Account',
+  other: 'Other',
+};
+
 export const applicationStatus = (value) => APPLICATION_STATUS_TONE[value] ?? fallback(value);
 export const agentVerification = (value) => AGENT_VERIFICATION_TONE[value] ?? fallback(value);
 export const userStatus = (value) => USER_STATUS_TONE[value] ?? fallback(value);
 export const catalogStatus = (value) => CATALOG_STATUS_TONE[value] ?? fallback(value);
 export const priority = (value) => PRIORITY_TONE[value] ?? fallback(value);
+export const ticketStatus = (value) => TICKET_STATUS_TONE[value] ?? fallback(value);

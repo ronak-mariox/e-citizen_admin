@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import DashboardLayout from '../layouts/DashboardLayout.jsx';
 import Icon from '../components/dashboard/Icon.jsx';
@@ -13,6 +13,7 @@ import * as servicesApi from '../api/services.js';
 import { getErrorMessage } from '../api/client.js';
 import { catalogStatus } from '../constants/statusTone.js';
 import { rupees } from '../utils/format.js';
+import { useLiveRefresh } from '../hooks/useLiveRefresh.js';
 import '../styles/service-builder.css';
 
 /* Services — what a citizen can apply for.
@@ -96,6 +97,14 @@ export function ServicesPage() {
   const [reloadToken, setReloadToken] = useState(0);
   const reload = () => setReloadToken((token) => token + 1);
 
+  /* Live refetches (useLiveRefresh) run quietly: the rows stay up while they
+     load, and a failed one keeps them rather than swapping in an error. */
+  const quietReload = useRef(false);
+  useLiveRefresh(() => {
+    quietReload.current = true;
+    reload();
+  }, ['catalog']);
+
   // A new search, department or status is a new result set, so all three reset
   // to page one — staying on page 3 of a list that now has one page shows
   // nothing.
@@ -126,23 +135,27 @@ export function ServicesPage() {
      search the user has already moved on from. */
   useEffect(() => {
     let cancelled = false;
+    const quiet = quietReload.current;
+    quietReload.current = false;
 
-    // The spinner has to appear when the request starts, not when it finishes.
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- see above
-    setLoading(true);
-    setLoadError(null);
+    if (!quiet) {
+      // The spinner has to appear when the request starts, not when it finishes.
+      setLoading(true);
+      setLoadError(null);
+    }
 
     servicesApi
       .listServices({ page, limit: PAGE_SIZE, search: debouncedQuery, status, department })
       .then((data) => {
         if (cancelled) return;
 
+        setLoadError(null);
         setServices(data.services);
         setStatusCounts(data.statusCounts ?? {});
         setPagination(data.pagination);
       })
       .catch((error) => {
-        if (cancelled) return;
+        if (cancelled || quiet) return;
 
         setLoadError(getErrorMessage(error));
         setServices([]);
@@ -156,9 +169,10 @@ export function ServicesPage() {
     };
   }, [page, debouncedQuery, status, department, reloadToken]);
 
-  /* The filter list is loaded once. A failure here leaves the dropdown at "All
-     departments", which is not worth a message of its own — the table below is
-     already saying whether the API is reachable. */
+  /* The filter list reloads with the table, so a department added elsewhere
+     appears in it. A failure keeps whatever the dropdown already had, which is
+     not worth a message of its own — the table below is already saying whether
+     the API is reachable. */
   useEffect(() => {
     let cancelled = false;
 
@@ -167,14 +181,12 @@ export function ServicesPage() {
       .then((data) => {
         if (!cancelled) setDepartments(data.departments);
       })
-      .catch(() => {
-        if (!cancelled) setDepartments([]);
-      });
+      .catch(() => {});
 
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [reloadToken]);
 
   const isNew = editing === 'new';
 

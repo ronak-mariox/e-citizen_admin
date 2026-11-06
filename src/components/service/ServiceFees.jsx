@@ -19,6 +19,12 @@ export function ServiceFees({ fees, onChange }) {
   const totals = feeTotals(fees);
   const money = (paise) => rupees(paise / 100);
 
+  // GST is charged on the service charge alone (see feeTotals) — a rate picked
+  // while that field is still ₹0 has nothing to apply to, and would otherwise
+  // look like the dropdown is simply broken.
+  const gstRateChosen = Number(fees.gstBasisPoints) > 0;
+  const gstHasNoBase = gstRateChosen && totals.serviceCharge === 0;
+
   return (
     <section className="form__group">
       <h2 className="form__group-title">Fees</h2>
@@ -56,8 +62,10 @@ export function ServiceFees({ fees, onChange }) {
               </option>
             ))}
           </select>
-          <span className="field2__hint">
-            Charged on the platform&apos;s charge only — a statutory fee is not a taxable supply.
+          <span className={gstHasNoBase ? 'field2__hint field2__hint--notice' : 'field2__hint'}>
+            {gstHasNoBase
+              ? "Won't add anything yet — GST is charged on the service charge, which is still ₹0."
+              : "Charged on the platform's charge only — a statutory fee is not a taxable supply."}
           </span>
         </label>
 
@@ -86,8 +94,10 @@ export function ServiceFees({ fees, onChange }) {
           <span>{money(totals.serviceCharge)}</span>
         </div>
         <div className="fee-summary__row">
-          <span>GST</span>
-          <span>{money(totals.gst)}</span>
+          <span>GST (on service charge)</span>
+          <span className={gstHasNoBase ? 'field2__hint--notice' : undefined}>
+            {money(totals.gst)}
+          </span>
         </div>
         <div className="fee-summary__row">
           <span>Delivery</span>
