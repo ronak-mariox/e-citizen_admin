@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import DashboardLayout from '../layouts/DashboardLayout.jsx';
 import Icon from '../components/dashboard/Icon.jsx';
@@ -7,6 +7,7 @@ import TableFooter from '../components/dashboard/TableFooter.jsx';
 import * as auditApi from '../api/audit.js';
 import { getErrorMessage } from '../api/client.js';
 import { initialsOf } from '../utils/format.js';
+import { useLiveRefresh } from '../hooks/useLiveRefresh.js';
 
 /* The audit trail.
 
@@ -81,6 +82,14 @@ export function AuditLogPage() {
 
   const reload = () => setReloadToken((token) => token + 1);
 
+  /* Live refetches (useLiveRefresh) run quietly: the rows stay up while they
+     load, and a failed one keeps them rather than swapping in an error. */
+  const quietReload = useRef(false);
+  useLiveRefresh(() => {
+    quietReload.current = true;
+    reload();
+  }, ['audit']);
+
   const changeQuery = (value) => {
     setQuery(value);
     setPage(1);
@@ -104,24 +113,28 @@ export function AuditLogPage() {
 
   useEffect(() => {
     let cancelled = false;
+    const quiet = quietReload.current;
+    quietReload.current = false;
 
-    // The spinner has to appear when the request starts, not when it finishes.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setLoading(true);
-    setLoadError(null);
+    if (!quiet) {
+      // The spinner has to appear when the request starts, not when it finishes.
+      setLoading(true);
+      setLoadError(null);
+    }
 
     auditApi
       .listAuditLogs({ page, limit: PAGE_SIZE, search: debouncedQuery, area, actor })
       .then((data) => {
         if (cancelled) return;
 
+        setLoadError(null);
         setLogs(data.logs);
         setAreas(data.areas ?? []);
         setActorCounts(data.actorCounts ?? {});
         setPagination(data.pagination);
       })
       .catch((error) => {
-        if (cancelled) return;
+        if (cancelled || quiet) return;
 
         setLoadError(getErrorMessage(error));
         setLogs([]);

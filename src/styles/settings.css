@@ -202,8 +202,6 @@
   min-width: 780px;
 }
 
-.table--team .table__head,
-.table--team .table__row,
 .table--agent-accounts .table__head,
 .table--agent-accounts .table__row {
   grid-template-columns: 1.5fr 1.5fr 0.8fr 1fr 0.8fr 0.8fr 0.6fr;
@@ -217,14 +215,6 @@
 .table--permissions .table__head,
 .table--permissions .table__row {
   grid-template-columns: 1.1fr 1.8fr 1fr 0.8fr;
-}
-
-/* The signed-in account, so nobody suspends themselves by mistake. */
-.person__self {
-  margin-left: var(--space-2);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  color: var(--color-brand);
 }
 
 /* ------------------------------------------------ pick a person, then act -- */
@@ -398,6 +388,33 @@
 }
 
 /* --------------------------------------------------------- permissions -- */
+
+/* The role sub-tab strip atop the Permissions card — same shape as
+   IntegrationsPanel's own .int-subtabs/.int-subtab, trimmed for a strip
+   nested inside a card rather than sitting under the page title. */
+.role-subtabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin: var(--space-5) 0;
+}
+
+.role-subtab {
+  padding: 6.75px 12.701px;
+}
+
+.role-perm-section + .role-perm-section {
+  margin-top: var(--space-6);
+}
+
+.role-perm-section__title {
+  margin-bottom: var(--space-3);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-subtle);
+}
 
 .perm {
   display: flex;

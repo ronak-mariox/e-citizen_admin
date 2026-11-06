@@ -3,7 +3,15 @@ import { useNavigate } from 'react-router-dom';
 
 import Icon from './Icon.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
+import * as notificationsApi from '../../api/notifications.js';
+import { useLiveRefresh } from '../../hooks/useLiveRefresh.js';
 import { displayName, initialsOf } from '../../utils/format.js';
+
+/* How often the bell checks for something new. A poll rather than a socket —
+   this console has no live channel yet — cheap enough at this interval that
+   opening ten tabs would not be a problem, frequent enough that "unread"
+   does not sit stale for an admin's whole session. */
+const UNREAD_POLL_MS = 60000;
 
 /** Long-form date, matching the chip the agent panels carry. */
 function today() {
@@ -14,12 +22,42 @@ function today() {
   });
 }
 
-export function Topbar({ onOpenNav, unread = true }) {
+export function Topbar({ onOpenNav }) {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
   const [open, setOpen] = useState(false);
   const menuRef = useRef(null);
+
+  const [unread, setUnread] = useState(0);
+  // A new notification moves the dot at once rather than at the next minute's poll.
+  const [unreadTick, setUnreadTick] = useState(0);
+  useLiveRefresh(() => setUnreadTick((tick) => tick + 1), ['notifications']);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const poll = () => {
+      // A single row is enough — only the bundled `unread` total is read.
+      notificationsApi
+        .listMyNotifications({ limit: 1 })
+        .then((data) => {
+          if (!cancelled) setUnread(data.unread?.total ?? 0);
+        })
+        .catch(() => {
+          // A failed poll should not put a false badge on the bell — leave
+          // whatever was last known rather than guessing.
+        });
+    };
+
+    poll();
+    const timer = setInterval(poll, UNREAD_POLL_MS);
+
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [unreadTick]);
 
   /* A menu that only closed on its own trigger would sit open behind whatever
      was clicked next. Escape closes it too, because a dropdown opened by
@@ -83,9 +121,14 @@ export function Topbar({ onOpenNav, unread = true }) {
           {today()}
         </span>
 
-        <button className="topbar__bell" type="button" aria-label="Notifications">
+        <button
+          className="topbar__bell"
+          type="button"
+          aria-label={unread > 0 ? `Notifications — ${unread} unread` : 'Notifications'}
+          onClick={() => navigate('/notifications')}
+        >
           <Icon name="bell" size={19} />
-          {unread && <span className="topbar__dot" aria-hidden="true" />}
+          {unread > 0 && <span className="topbar__dot" aria-hidden="true" />}
         </button>
 
         <div className="topbar__account" ref={menuRef}>

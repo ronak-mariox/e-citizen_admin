@@ -6,7 +6,7 @@
  * a donut legend cannot hold without truncating. Rows give each label a full
  * line and keep the comparison readable.
  */
-export function MeterList({ items }) {
+export function MeterList({ items, formatValue = (value) => value.toLocaleString('en-IN') }) {
   const total = items.reduce((sum, item) => sum + item.value, 0) || 1;
 
   return (
@@ -19,7 +19,7 @@ export function MeterList({ items }) {
               {item.label}
             </span>
             <span className="meter__value">
-              {item.value.toLocaleString('en-IN')}
+              {formatValue(item.value)}
               {' · '}
               {Math.round((item.value / total) * 100)}%
             </span>

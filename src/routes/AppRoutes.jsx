@@ -5,10 +5,15 @@ import ForgotPasswordPage from '../pages/ForgotPasswordPage.jsx';
 import DashboardPage from '../pages/DashboardPage.jsx';
 import AgentsPage from '../pages/AgentsPage.jsx';
 import ApplicationsPage from '../pages/ApplicationsPage.jsx';
+import TicketsPage from '../pages/TicketsPage.jsx';
+import ReportsPage from '../pages/ReportsPage.jsx';
+import WalletsPage from '../pages/WalletsPage.jsx';
+import SettlementsPage from '../pages/SettlementsPage.jsx';
 import CitizensPage from '../pages/CitizensPage.jsx';
 import DepartmentsPage from '../pages/DepartmentsPage.jsx';
 import ServicesPage from '../pages/ServicesPage.jsx';
 import AuditLogPage from '../pages/AuditLogPage.jsx';
+import NotificationsPage from '../pages/NotificationsPage.jsx';
 import SettingsPage from '../pages/SettingsPage.jsx';
 import ProfilePage from '../pages/ProfilePage.jsx';
 import SectionPlaceholderPage from '../pages/SectionPlaceholderPage.jsx';
@@ -19,8 +24,13 @@ const BUILT_SECTIONS = [
   '/agents',
   '/citizens',
   '/applications',
+  '/tickets',
+  '/reports',
+  '/wallets',
+  '/settlements',
   '/departments',
   '/services',
+  '/notifications',
   '/audit-log',
   '/settings',
 ];
@@ -35,8 +45,13 @@ export function AppRoutes() {
       <Route path="/agents" element={<AgentsPage />} />
       <Route path="/citizens" element={<CitizensPage />} />
       <Route path="/applications" element={<ApplicationsPage />} />
+      <Route path="/tickets" element={<TicketsPage />} />
+      <Route path="/reports" element={<ReportsPage />} />
+      <Route path="/wallets" element={<WalletsPage />} />
+      <Route path="/settlements" element={<SettlementsPage />} />
       <Route path="/departments" element={<DepartmentsPage />} />
       <Route path="/services" element={<ServicesPage />} />
+      <Route path="/notifications" element={<NotificationsPage />} />
       <Route path="/audit-log" element={<AuditLogPage />} />
       <Route path="/settings" element={<SettingsPage />} />
       {/* Reached from the account menu in the top bar, not from the sidebar —

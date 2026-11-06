@@ -6,6 +6,7 @@ import * as agentsApi from '../../api/agents.js';
 import { agentVerification } from '../../constants/statusTone.js';
 import { getErrorMessage } from '../../api/client.js';
 import { assetUrl } from '../../utils/format.js';
+import { useLiveRefresh } from '../../hooks/useLiveRefresh.js';
 
 /* Review what an agent handed in.
 
@@ -73,8 +74,14 @@ export function AgentDocumentsPanel({ agent, onReviewed }) {
 
   const agentId = agent._id;
 
+  // An upload from the agent's side shows up here without leaving the screen.
+  // Only the first load shows "Loading…"; a failed refetch keeps the list.
+  const [reloadToken, setReloadToken] = useState(0);
+  useLiveRefresh(() => setReloadToken((token) => token + 1), ['agents']);
+
   useEffect(() => {
     let cancelled = false;
+    const quiet = reloadToken > 0;
 
     agentsApi
       .getAgentOnboarding(agentId)
@@ -82,7 +89,7 @@ export function AgentDocumentsPanel({ agent, onReviewed }) {
         if (!cancelled) setChecklist(data);
       })
       .catch((caught) => {
-        if (!cancelled) setError(getErrorMessage(caught));
+        if (!cancelled && !quiet) setError(getErrorMessage(caught));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -91,7 +98,7 @@ export function AgentDocumentsPanel({ agent, onReviewed }) {
     return () => {
       cancelled = true;
     };
-  }, [agentId]);
+  }, [agentId, reloadToken]);
 
   const review = useCallback(
     async (documentId, status, why) => {

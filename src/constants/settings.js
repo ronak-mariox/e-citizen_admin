@@ -1,11 +1,15 @@
 /* Settings — the tab strip and the data each panel renders.
 
    Settings is where an admin configures the platform rather than works it, so
-   every tab below maps to something the codebase already has: staff accounts
-   (backend/src/models/admin.js and agent.js), the permission list
-   (backend/src/constants/roles.js) and the API configuration
-   (backend/src/config/env.js). Nothing here invents a concept the backend does
-   not carry.
+   every tab below maps to something the codebase already has: the permission
+   list (backend/src/constants/roles.js) and the saved third-party integration
+   credentials (backend/src/services/integrationConfig.service.js). Nothing
+   here invents a concept the backend does not carry.
+
+   Administrator accounts themselves are not managed in the console at all —
+   the "Team Members" tab that used to list them was removed, and so was the
+   sidebar's placeholder Administrators section. Admins are seeded with
+   backend/src/scripts/seed_admin.js.
 
    The catalogue and the audit trail are their own sidebar sections rather than
    tabs here — they are worked daily and their tables need a full page, which a
@@ -18,14 +22,7 @@
    whole back office — there is no second, higher tier above them. The backend
    still re-checks every request, which is where a real restriction belongs. */
 
-import { ADMIN_PERMISSIONS } from './auth.js';
-
 export const SETTINGS_TABS = [
-  {
-    id: 'team',
-    label: 'Team Members',
-    icon: 'admins',
-  },
   {
     id: 'roles',
     label: 'Roles & Permissions',
@@ -33,7 +30,7 @@ export const SETTINGS_TABS = [
   },
   {
     id: 'system',
-    label: 'System Config',
+    label: 'Third Party Integrations',
     icon: 'sliders',
   },
 ];
@@ -153,72 +150,8 @@ export const CITIZEN_OPERATIONS = [
 
 /* ------------------------------------------------------------ permissions -- */
 
-/* ADMIN_PERMISSIONS from backend/src/constants/roles.js, with what each one
-   actually unlocks and the section it governs.
-
-   These are the capabilities that make up the Admin role rather than a tier
-   above it — every admin account carries the full set, and the list is here so
-   the console can say what "admin" actually means instead of asking anyone to
-   take the word on trust. */
-export const PERMISSION_CATALOG = [
-  {
-    value: ADMIN_PERMISSIONS.MANAGE_ADMINS,
-    label: 'Manage administrators',
-    grants: 'Create, scope and suspend other admin accounts',
-    section: 'Administrators',
-  },
-  {
-    value: ADMIN_PERMISSIONS.MANAGE_AGENTS,
-    label: 'Manage agents',
-    grants: 'Create agents, set their work scope and reset their passwords',
-    section: 'Agents',
-  },
-  {
-    value: ADMIN_PERMISSIONS.MANAGE_CITIZENS,
-    label: 'Manage citizens',
-    grants: 'Edit citizen profiles, verify KYC and block sign-in',
-    section: 'Citizens',
-  },
-  {
-    value: ADMIN_PERMISSIONS.MANAGE_CATALOG,
-    label: 'Manage catalogue',
-    grants: 'Departments, service categories and services, including pricing',
-    section: 'Departments & Services',
-  },
-  {
-    value: ADMIN_PERMISSIONS.MANAGE_APPLICATIONS,
-    label: 'Manage applications',
-    grants: 'Reassign, escalate and force-close citizen applications',
-    section: 'Applications',
-  },
-  {
-    value: ADMIN_PERMISSIONS.MANAGE_PAYMENTS,
-    label: 'Manage payments',
-    grants: 'Wallet recharges, refunds and manual credits',
-    section: 'Wallets & Recharges',
-  },
-  {
-    value: ADMIN_PERMISSIONS.MANAGE_SETTLEMENTS,
-    label: 'Manage settlements',
-    grants: 'Approve and release agent payouts',
-    section: 'Settlements',
-  },
-  {
-    value: ADMIN_PERMISSIONS.MANAGE_TICKETS,
-    label: 'Manage tickets',
-    grants: 'Answer, reassign and close support tickets',
-    section: 'Support Tickets',
-  },
-  {
-    value: ADMIN_PERMISSIONS.VIEW_REPORTS,
-    label: 'View reports',
-    grants: 'Read-only access to volume, revenue and performance reports',
-    section: 'Reports',
-  },
-  {
-    value: ADMIN_PERMISSIONS.MANAGE_SETTINGS,
-    label: 'Manage settings',
-    grants: 'This console, plus the audit trail',
-    section: 'Settings & Audit Log',
-  },
-];
+/* What each role may do now lives on the backend (backend/src/constants/
+   permissions.js's ROLE_PERMISSION_CATALOG, read through GET
+   /admins/role-permissions) rather than as a second, frontend-only copy —
+   RolesPanel renders whatever that endpoint sends, so a permission is never
+   described two different ways in two different places. */

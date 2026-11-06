@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import Icon from '../dashboard/Icon.jsx';
 import AgentForm from '../dashboard/AgentForm.jsx';
@@ -17,6 +17,7 @@ import {
 } from '../../constants/settings.js';
 import { userStatus } from '../../constants/statusTone.js';
 import { initialsOf } from '../../utils/format.js';
+import { useLiveRefresh } from '../../hooks/useLiveRefresh.js';
 
 /* Agent accounts, and where they are created.
 
@@ -56,6 +57,14 @@ export function AgentsPanel() {
   const [reloadToken, setReloadToken] = useState(0);
   const reload = () => setReloadToken((token) => token + 1);
 
+  /* Live refetches (useLiveRefresh) run quietly: the rows stay up while they
+     load, and a failed one keeps them rather than swapping in an error. */
+  const quietReload = useRef(false);
+  useLiveRefresh(() => {
+    quietReload.current = true;
+    reload();
+  }, ['agents']);
+
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedQuery(query), SEARCH_DEBOUNCE_MS);
 
@@ -64,22 +73,26 @@ export function AgentsPanel() {
 
   useEffect(() => {
     let cancelled = false;
+    const quiet = quietReload.current;
+    quietReload.current = false;
 
-    // The spinner has to appear when the request starts, not when it finishes.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setLoading(true);
-    setLoadError(null);
+    if (!quiet) {
+      // The spinner has to appear when the request starts, not when it finishes.
+      setLoading(true);
+      setLoadError(null);
+    }
 
     agentsApi
       .listAgents({ limit: 100, search: debouncedQuery, role: LEVEL_TO_ROLE[level], status })
       .then((data) => {
         if (cancelled) return;
 
+        setLoadError(null);
         setRows(data.agents);
         setTotal(data.pagination?.total ?? data.agents.length);
       })
       .catch((error) => {
-        if (cancelled) return;
+        if (cancelled || quiet) return;
 
         setLoadError(getErrorMessage(error));
         setRows([]);

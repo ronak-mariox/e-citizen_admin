@@ -1,9 +1,12 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import Icon from './Icon.jsx';
 import { PriorityTag, StatusPill } from './StatusPill.jsx';
+import AssignmentPanel from './AssignmentPanel.jsx';
+import ConfirmDialog from './ConfirmDialog.jsx';
 import * as applicationsApi from '../../api/applications.js';
 import { getErrorMessage } from '../../api/client.js';
+import { useLiveRefresh } from '../../hooks/useLiveRefresh.js';
 import { applicationStatus, priority } from '../../constants/statusTone.js';
 import { rupees } from '../../utils/format.js';
 
@@ -14,11 +17,14 @@ import { rupees } from '../../utils/format.js';
    of an application and nine columns cannot show them. So the detail is a
    second request rather than a bigger list.
 
-   Read-only, and that is not an omission. An admin cannot move an application
-   through the workflow — that is an agent's queue, with its own rules about who
-   may do what — so a screen with Approve and Reject on it would be offering
-   something the API refuses. What it does is answer "what is this, and where
-   has it got to", which is the question the table cannot. */
+   Mostly read-only, and that is not an omission. An admin cannot move an
+   application through the workflow — that is an agent's queue, with its own
+   rules about who may do what — so most of this screen answers "what is this,
+   and where has it got to", which is the question the table cannot.
+
+   Extension Requests is the one genuine exception: an Agent 2 asking for more
+   time is asking the admin specifically, and there is nobody else's queue for
+   that decision to live in — see ExtensionRequests below. */
 
 const DATE_TIME = {
   day: '2-digit',
@@ -60,6 +66,199 @@ function Fact({ label, children }) {
   );
 }
 
+const EXTENSION_STATUS_TONE = { pending: 'amber', approved: 'green', rejected: 'red' };
+const EXTENSION_STATUS_LABEL = { pending: 'Pending', approved: 'Approved', rejected: 'Rejected' };
+
+/**
+ * Every ask Agent 2 has made for more time on this case, and — for the ones
+ * still pending — the admin's own action on them.
+ *
+ * Approving edits the one thing an extension actually buys: `slaHours` on the
+ * application itself (see backend computeSlaStatus, which reads it directly).
+ * The days input opens pre-filled with what was asked, editable rather than
+ * fixed — an admin granting three of the five days asked for is a normal
+ * outcome, not an edge case to work around.
+ */
+function ExtensionRequests({ application, onUpdated }) {
+  const requests = application.extensionRequests ?? [];
+
+  // Which pending row has its Grant form open — one at a time, id or null.
+  const [granting, setGranting] = useState(null);
+  const [days, setDays] = useState('');
+  const [rejecting, setRejecting] = useState(null);
+  const [busyId, setBusyId] = useState(null);
+  const [actionError, setActionError] = useState(null);
+
+  if (requests.length === 0) return null;
+
+  const startGrant = (request) => {
+    setActionError(null);
+    setGranting(request.id);
+    setDays(String(request.days));
+  };
+
+  const cancelGrant = () => {
+    setGranting(null);
+    setDays('');
+  };
+
+  async function submitGrant(request) {
+    const parsedDays = Number(days);
+    if (!Number.isInteger(parsedDays) || parsedDays < 1) {
+      setActionError('Enter a whole number of days, at least 1.');
+      return;
+    }
+
+    setBusyId(request.id);
+    setActionError(null);
+
+    try {
+      const updated = await applicationsApi.approveExtensionRequest(application.id, request.id, {
+        days: parsedDays,
+      });
+      onUpdated(updated);
+      setGranting(null);
+      setDays('');
+    } catch (error) {
+      setActionError(getErrorMessage(error));
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function confirmReject(request) {
+    setBusyId(request.id);
+    setActionError(null);
+
+    try {
+      const updated = await applicationsApi.rejectExtensionRequest(application.id, request.id);
+      onUpdated(updated);
+      setRejecting(null);
+    } catch (error) {
+      setActionError(getErrorMessage(error));
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  return (
+    <section className="card card--spaced">
+      <div className="card__head">
+        <div>
+          <h2 className="card__title">Extension Requests</h2>
+          <p className="card__subtitle">Asks from Agent 2 for more time on this case</p>
+        </div>
+      </div>
+
+      {actionError && (
+        <p className="notice notice--error" role="alert">
+          {actionError}
+        </p>
+      )}
+
+      <ul className="extreq__list">
+        {requests.map((request) => (
+          <li className="extreq" key={request.id}>
+            <div className="extreq__head">
+              <span className="extreq__body">
+                <span className="extreq__title">
+                  {request.requestedBy.name ?? 'An Agent 2'}
+                  {request.requestedBy.employeeId ? ` · ${request.requestedBy.employeeId}` : ''}
+                  {' asked for '}
+                  {request.days} more day{request.days === 1 ? '' : 's'}
+                </span>
+                {request.reason && <span className="extreq__reason">{request.reason}</span>}
+                <span className="extreq__meta">{stamp(request.requestedAt)}</span>
+              </span>
+
+              <StatusPill
+                label={EXTENSION_STATUS_LABEL[request.status] ?? request.status}
+                tone={EXTENSION_STATUS_TONE[request.status] ?? 'slate'}
+              />
+            </div>
+
+            {request.status !== 'pending' && (
+              <p className="extreq__resolution">
+                {request.status === 'approved'
+                  ? `Granted ${request.daysGranted} day${request.daysGranted === 1 ? '' : 's'}`
+                  : 'No extra time granted'}
+                {request.resolvedAt ? ` · ${stamp(request.resolvedAt)}` : ''}
+                {request.resolutionNote ? ` — ${request.resolutionNote}` : ''}
+              </p>
+            )}
+
+            {request.status === 'pending' && granting !== request.id && (
+              <div className="extreq__actions">
+                <button
+                  className="btn btn--sm btn--primary"
+                  type="button"
+                  disabled={busyId === request.id}
+                  onClick={() => startGrant(request)}
+                >
+                  Approve
+                </button>
+                <button
+                  className="btn btn--sm"
+                  type="button"
+                  disabled={busyId === request.id}
+                  onClick={() => setRejecting(request)}
+                >
+                  Reject
+                </button>
+              </div>
+            )}
+
+            {/* The place where the case's SLA is actually edited — opened by
+                Approve rather than granting the instant it is clicked, since
+                an admin adjusting the days first is a normal outcome. */}
+            {granting === request.id && (
+              <div className="extreq__grant">
+                <label className="field2">
+                  <span className="field2__label">Days to grant</span>
+                  <input
+                    className="field2__input"
+                    type="number"
+                    min="1"
+                    max="365"
+                    value={days}
+                    onChange={(event) => setDays(event.target.value)}
+                  />
+                </label>
+
+                <div className="extreq__actions">
+                  <button className="btn btn--sm" type="button" onClick={cancelGrant}>
+                    Cancel
+                  </button>
+                  <button
+                    className="btn btn--sm btn--primary"
+                    type="button"
+                    disabled={busyId === request.id}
+                    onClick={() => submitGrant(request)}
+                  >
+                    {busyId === request.id ? 'Granting…' : 'Grant Extension'}
+                  </button>
+                </div>
+              </div>
+            )}
+          </li>
+        ))}
+      </ul>
+
+      {rejecting && (
+        <ConfirmDialog
+          title="Reject this extension request?"
+          body={`${rejecting.requestedBy.name ?? 'The Agent 2'} will be told the request was rejected. No extra time is granted.`}
+          confirmLabel="Yes, reject"
+          tone="danger"
+          busy={busyId === rejecting.id}
+          onCancel={() => setRejecting(null)}
+          onConfirm={() => confirmReject(rejecting)}
+        />
+      )}
+    </section>
+  );
+}
+
 export function ApplicationDetail({ application: row, onBack }) {
   const [application, setApplication] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -68,23 +267,35 @@ export function ApplicationDetail({ application: row, onBack }) {
 
   const reload = () => setReloadToken((token) => token + 1);
 
+  // A live refetch keeps the application on screen, and keeps it if it fails.
+  const quietReload = useRef(false);
+  useLiveRefresh(() => {
+    quietReload.current = true;
+    reload();
+  }, ['applications']);
+
   useEffect(() => {
     let cancelled = false;
+    const quiet = quietReload.current;
+    quietReload.current = false;
 
     /* Fetching is this screen synchronising itself with the API, which is what
        an effect is for; `cancelled` drops a response for a row the admin has
        already navigated away from. */
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- see above
-    setLoading(true);
-    setLoadError(null);
+    if (!quiet) {
+      setLoading(true);
+      setLoadError(null);
+    }
 
     applicationsApi
       .getApplication(row.id)
       .then((data) => {
-        if (!cancelled) setApplication(data);
+        if (cancelled) return;
+        setApplication(data);
+        setLoadError(null);
       })
       .catch((error) => {
-        if (!cancelled) setLoadError(getErrorMessage(error));
+        if (!cancelled && !quiet) setLoadError(getErrorMessage(error));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -201,12 +412,6 @@ export function ApplicationDetail({ application: row, onBack }) {
               <Fact label="Reference">{application.referenceNumber ?? '—'}</Fact>
               <Fact label="Status">{statusLabel(application.status)}</Fact>
 
-              {/* Nobody until the queue hands it to an officer, which is the
-                  normal state of a fresh application. */}
-              <Fact label="Assigned to">
-                {application.assignedAgent?.name ?? 'Unassigned'}
-              </Fact>
-
               <Fact label="Submitted">
                 {application.status === 'draft'
                   ? 'Not submitted'
@@ -218,8 +423,27 @@ export function ApplicationDetail({ application: row, onBack }) {
                   ? stamp(application.expectedCompletionDate, DATE)
                   : 'Not stated'}
               </Fact>
+              {/* Internal only — the SLA clock (slaHours, paused on
+                  citizen-owed delays), unrelated to the citizen's own
+                  promised date above. See computeSlaStatus, backend
+                  application.service.js. */}
+              <Fact label="SLA Remaining">
+                <span className={application.sla?.isOverdue ? 'appfact__value--danger' : undefined}>
+                  {application.sla?.remainingLabel ?? '—'}
+                </span>
+              </Fact>
             </dl>
           </section>
+
+          {/* Approving/rejecting replaces the record in place rather than
+              refetching, same as AssignmentPanel below — both calls already
+              answer with the application as it now stands. */}
+          <ExtensionRequests application={application} onUpdated={setApplication} />
+
+          {/* Reassigning replaces the record in place rather than refetching:
+              the assign call already answers with the application as it now
+              stands, history included. */}
+          <AssignmentPanel application={application} onAssigned={setApplication} />
 
           <section className="card card--spaced">
             <div className="card__head">

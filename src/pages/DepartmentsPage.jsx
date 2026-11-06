@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import DashboardLayout from '../layouts/DashboardLayout.jsx';
 import Icon from '../components/dashboard/Icon.jsx';
@@ -11,6 +11,7 @@ import { StatusPill } from '../components/dashboard/StatusPill.jsx';
 import * as departmentsApi from '../api/departments.js';
 import { getErrorMessage } from '../api/client.js';
 import { catalogStatus } from '../constants/statusTone.js';
+import { useLiveRefresh } from '../hooks/useLiveRefresh.js';
 
 /* Departments — the owning body behind every service.
 
@@ -59,6 +60,14 @@ export function DepartmentsPage() {
   const [reloadToken, setReloadToken] = useState(0);
   const reload = () => setReloadToken((token) => token + 1);
 
+  /* Live refetches (useLiveRefresh) run quietly: the rows stay up while they
+     load, and a failed one keeps them rather than swapping in an error. */
+  const quietReload = useRef(false);
+  useLiveRefresh(() => {
+    quietReload.current = true;
+    reload();
+  }, ['catalog']);
+
   // A new search or status is a new result set, so both handlers reset to page
   // one — staying on page 3 of a list that now has one page shows nothing.
   const changeQuery = (value) => {
@@ -78,9 +87,8 @@ export function DepartmentsPage() {
   }, [query]);
 
   /* Fetching is this screen synchronising itself with an external system — the
-     API — which is what an effect is for. The rule below objects to the
-     `setLoading(true)` running synchronously, and that is deliberate: the
-     spinner has to appear when the request starts, not when it finishes.
+     API — which is what an effect is for. `setLoading(true)` runs
+     synchronously, and that is deliberate: the spinner has to appear when the request starts, not when it finishes.
 
      `cancelled` matters more than it looks. Typing quickly or paging twice
      leaves two requests in flight, and without the guard the slower one wins
@@ -88,22 +96,26 @@ export function DepartmentsPage() {
      search the user has already moved on from. */
   useEffect(() => {
     let cancelled = false;
+    const quiet = quietReload.current;
+    quietReload.current = false;
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- see above
-    setLoading(true);
-    setLoadError(null);
+    if (!quiet) {
+      setLoading(true);
+      setLoadError(null);
+    }
 
     departmentsApi
       .listDepartments({ page, limit: PAGE_SIZE, search: debouncedQuery, status })
       .then((data) => {
         if (cancelled) return;
 
+        setLoadError(null);
         setDepartments(data.departments);
         setStatusCounts(data.statusCounts ?? {});
         setPagination(data.pagination);
       })
       .catch((error) => {
-        if (cancelled) return;
+        if (cancelled || quiet) return;
 
         setLoadError(getErrorMessage(error));
         setDepartments([]);

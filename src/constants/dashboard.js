@@ -1,8 +1,10 @@
 /* Dashboard content and sample data.
 
-   Every figure below is placeholder data standing in for the API — the
-   components read shape, not values, so swapping in a fetched payload is a
-   matter of matching these keys.
+   Most figures below are placeholder data standing in for a chart API that
+   does not exist yet — the components read shape, not values, so swapping in
+   a fetched payload is a matter of matching these keys. Every STAT_CARDS
+   entry is now overridden with a live figure by DashboardPage.jsx — see its
+   LIVE_STAT_IDS note; the values here only show until that lands.
 
    `accent` is a hex rather than a token because the stat tiles are a deliberate
    sequence of hues; see components/dashboard/StatCard.jsx. */
@@ -56,32 +58,34 @@ export const STAT_CARDS = [
     trend: { direction: 'up', value: '3%' },
     to: '/citizens',
   },
+  /* The company wallet every citizen payment lands in, and the payouts still
+     owed to Agent 2 from it — both live, from `stats.walletBalance` and
+     `stats.payoutsDue`. */
   {
     id: 'recharges',
     icon: 'wallet',
     accent: '#8e51ff',
-    value: '31',
-    label: 'Recharges to Approve',
-    hint: '₹2.4L pending',
+    value: '0',
+    label: 'Company Wallet',
+    hint: 'Balance held',
     to: '/wallets',
   },
   {
     id: 'settlements',
     icon: 'settlements',
     accent: '#00a63e',
-    value: '₹6.8L',
-    label: 'Settlements Due',
-    hint: 'Next cycle: 05 Aug',
+    value: '0',
+    label: 'Payouts Due',
+    hint: 'Owed to Agent 2',
     to: '/settlements',
   },
   {
     id: 'tickets',
     icon: 'tickets',
     accent: '#ff6900',
-    value: '17',
+    value: '0',
     label: 'Open Tickets',
-    hint: '3 breaching SLA',
-    hintTone: 'danger',
+    hint: 'Raised by citizens',
     to: '/tickets',
   },
 ];
@@ -117,38 +121,15 @@ export const DEPARTMENT_LOAD = [
    trail through /audit-logs — see DashboardPage — so there is nothing to keep
    in step with it. */
 
-/** Things an admin should clear today, surfaced so they are not hunted for. */
-export const ATTENTION_ITEMS = [
-  {
-    id: 'at-1',
-    icon: 'wallet',
-    accent: '#8e51ff',
-    title: '31 wallet recharges awaiting approval',
-    meta: '₹2,41,500 total · oldest waiting 2 days',
-    to: '/wallets',
-  },
-  {
-    id: 'at-2',
-    icon: 'alert',
-    accent: '#fb2c36',
-    title: '9 applications past their SLA',
-    meta: 'Urban Development and Revenue',
-    to: '/applications',
-  },
-  {
-    id: 'at-3',
-    icon: 'tickets',
-    accent: '#ff6900',
-    title: '3 support tickets breaching first response',
-    meta: 'Category: payment and dispute',
-    to: '/tickets',
-  },
-  {
-    id: 'at-4',
-    icon: 'agents',
-    accent: '#fe9a00',
-    title: '2 agent accounts pending activation',
-    meta: 'Created last week, never signed in',
-    to: '/agents',
-  },
-];
+/* "Needs Your Attention" used to be a fixture here — 31 wallet recharges, 3
+   support tickets, 2 agent accounts "pending activation": none of that is
+   real, the same wallets/tickets gap STAT_CARDS has above, plus an agent
+   activation concept nothing in the backend tracks either. The one entry that
+   *was* real — applications past their SLA — duplicated the live
+   `stats.slaBreached` figure with a hand-written number that could not stay
+   in step with it.
+
+   DashboardPage.jsx now builds this list itself from `stats`, so an entry
+   only ever appears when there is a genuine count behind it, and disappears
+   the moment that count is zero rather than sitting there stale at "0
+   wallet recharges awaiting approval". */
