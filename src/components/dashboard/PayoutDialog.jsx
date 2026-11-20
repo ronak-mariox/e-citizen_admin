@@ -22,7 +22,13 @@ import { rupees } from '../../utils/format.js';
 /* Paid so far for one purpose. Payouts from before purposes existed were all
    for the service, as the backend defaults them. */
 const paidFor = (payouts, purpose) =>
-  (payouts ?? []).filter((one) => (one.purpose ?? 'service') === purpose).reduce((sum, one) => sum + one.amount, 0);
+  (payouts ?? [])
+    .filter((one) => one.status !== 'failed' && (one.purpose ?? 'service') === purpose)
+    .reduce((sum, one) => sum + one.amount, 0);
+
+/* Sent through RazorpayX to the bank account or UPI ID the Agent 2 saved in
+   their profile — the one method that moves money rather than recording it. */
+const RAZORPAY = 'razorpay';
 
 export function PayoutDialog({ row, onCancel, onPaid }) {
   const money = row.money;
@@ -33,7 +39,8 @@ export function PayoutDialog({ row, onCancel, onPaid }) {
   /* Once Agent 2 has been paid the application is settled, and all that can
      be owed is an additional payment the citizen made after it — which the
      backend's `suggested` already is. */
-  const settled = (row.payouts?.length ?? 0) > 0;
+  // A failed RazorpayX payout paid nothing, so it does not settle anything.
+  const settled = (row.payouts ?? []).some((one) => one.status !== 'failed');
   const owed = settled
     ? { service: 0, additional: money.suggested }
     : {
@@ -49,6 +56,22 @@ export function PayoutDialog({ row, onCancel, onPaid }) {
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
+  /* Where a RazorpayX payout would land, masked — undefined while loading,
+     null when the Agent 2 has not added bank details yet. */
+  const [destination, setDestination] = useState(undefined);
+
+  useEffect(() => {
+    let cancelled = false;
+    walletApi
+      .getApplicationMoney(row.id)
+      .then((fresh) => !cancelled && setDestination(fresh.payoutDestination ?? null))
+      .catch(() => !cancelled && setDestination(null));
+    return () => {
+      cancelled = true;
+    };
+  }, [row.id]);
+
+  const viaRazorpay = method === RAZORPAY;
 
   useEffect(() => {
     const onKeyDown = (event) => {
@@ -59,7 +82,8 @@ export function PayoutDialog({ row, onCancel, onPaid }) {
   }, [busy, onCancel]);
 
   const paise = Math.round(Number(amount) * 100);
-  const valid = Number.isFinite(paise) && paise > 0 && paise <= money.available;
+  const valid =
+    Number.isFinite(paise) && paise > 0 && paise <= money.available && (!viaRazorpay || Boolean(destination));
   const companyKeeps = money.available - (valid ? paise : 0);
 
   async function submit(event) {
@@ -69,7 +93,16 @@ export function PayoutDialog({ row, onCancel, onPaid }) {
     setBusy(true);
     setError(null);
     try {
-      onPaid(await walletApi.releasePayout(row.id, { amount: paise, purpose, method, reference, note }));
+      onPaid(
+        await walletApi.releasePayout(row.id, {
+          amount: paise,
+          purpose,
+          method,
+          // RazorpayX names the payout itself.
+          reference: viaRazorpay ? undefined : reference,
+          note,
+        })
+      );
     } catch (failure) {
       setError(getErrorMessage(failure));
       setBusy(false);
@@ -167,23 +200,35 @@ export function PayoutDialog({ row, onCancel, onPaid }) {
           <label className="field2">
             <span className="field2__label">Paid by</span>
             <select className="field2__input" value={method} onChange={(event) => setMethod(event.target.value)}>
+              <option value={RAZORPAY} disabled={destination === null}>
+                Razorpay — send now (RazorpayX)
+              </option>
               {PAYMENT_METHODS.map((one) => (
                 <option value={one.value} key={one.value}>
-                  {one.label}
+                  {one.label} — already paid
                 </option>
               ))}
             </select>
+            <span className={viaRazorpay && destination === null ? 'field2__hint field2__hint--error' : 'field2__hint'}>
+              {destination === undefined
+                ? 'Checking where Agent 2 is paid…'
+                : destination
+                  ? `RazorpayX sends to ${destination}.`
+                  : 'Agent 2 has not added a bank account or UPI ID in their profile, so RazorpayX cannot pay them yet.'}
+            </span>
           </label>
 
-          <label className="field2">
-            <span className="field2__label">Reference (UTR / cheque no.)</span>
-            <input
-              className="field2__input"
-              value={reference}
-              maxLength={120}
-              onChange={(event) => setReference(event.target.value)}
-            />
-          </label>
+          {!viaRazorpay && (
+            <label className="field2">
+              <span className="field2__label">Reference (UTR / cheque no.)</span>
+              <input
+                className="field2__input"
+                value={reference}
+                maxLength={120}
+                onChange={(event) => setReference(event.target.value)}
+              />
+            </label>
+          )}
 
           <label className="field2 field2--full">
             <span className="field2__label">Note (optional)</span>
@@ -208,7 +253,7 @@ export function PayoutDialog({ row, onCancel, onPaid }) {
             Cancel
           </button>
           <button className="btn btn--primary" type="submit" disabled={busy || !valid}>
-            {busy ? 'Paying…' : `Pay ${valid ? rupees(paise / 100) : ''}`}
+            {busy ? 'Paying…' : `${viaRazorpay ? 'Send' : 'Record'} ${valid ? rupees(paise / 100) : ''}`}
           </button>
         </div>
       </form>

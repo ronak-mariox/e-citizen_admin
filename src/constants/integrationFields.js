@@ -60,11 +60,6 @@ export const INTEGRATION_META = {
     provider: 'Razorpay',
     icon: 'payment',
     notice: 'Credentials are encrypted with AES-256 before storing in the database. Enter all fields to update the configuration.',
-    /* Not wired into the live application-payment flow yet — see the field's
-       own note in the page. Saved now so activation is a flag flip, not a
-       second round of typing keys in, once that flow exists. */
-    scaffoldNotice:
-      "This integration is not yet connected to application payments — the fee is still recorded the way it is today. Saving credentials here gets Razorpay ready for when it is.",
     fields: [
       { key: 'keyId', label: 'Key ID', required: true, placeholder: 'Enter Razorpay Key ID (e.g., rzp_live_...)' },
       { key: 'keySecret', label: 'Key Secret', required: true, placeholder: 'Enter Razorpay Key Secret', secret: true },
@@ -78,13 +73,27 @@ export const INTEGRATION_META = {
         hint:
           'Without this, payments only get confirmed when the customer’s app calls back — if they close the app right after paying, the order can get stuck as "pending" even though Razorpay captured the money. Set up the webhook below once payments go live to fix that.',
       },
+      {
+        key: 'payoutAccountNumber',
+        label: 'RazorpayX Account Number',
+        required: false,
+        optionalLabel: '(needed only to pay Agent 2 through RazorpayX)',
+        placeholder: 'e.g. 2323230000000000',
+        hint: 'RazorpayX Dashboard › My Account & Settings › Banking. Test mode has its own account number.',
+      },
     ],
-    /* Shown once payments actually go live through this integration — the
-       URL is real and already routed (routes/webhooks.routes.js), even
-       though nothing calls it into the fee flow yet (see scaffoldNotice
-       above). */
+    /* Confirms citizen payments the app did not report back, and settles
+       RazorpayX payouts to Agent 2 (routes/webhooks.routes.js). */
     webhookPath: '/webhooks/razorpay',
-    webhookEvents: ['payment.captured', 'payment.failed'],
+    webhookEvents: [
+      'payment.authorized',
+      'payment.captured',
+      'order.paid',
+      'payout.processed',
+      'payout.failed',
+      'payout.reversed',
+      'payout.rejected',
+    ],
   },
   firebase: {
     title: 'Firebase Configuration',
