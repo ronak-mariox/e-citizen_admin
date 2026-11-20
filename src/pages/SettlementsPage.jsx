@@ -264,7 +264,15 @@ export function SettlementsPage() {
                     <div className="table__cell table__muted table__truncate" role="cell">{row.reference ?? '—'}</div>
                     <div className="table__cell table__muted table__truncate" role="cell">{row.actorName ?? '—'}</div>
                     <div className="table__cell" role="cell">
-                      <StatusPill label="Paid" tone="green" />
+                      {/* A RazorpayX payout is Processing until it settles; a failed one's
+                          money went back into the wallet. Hand-recorded ones are Paid. */}
+                      {row.status === 'pending' ? (
+                        <StatusPill label="Processing" tone="amber" />
+                      ) : row.status === 'failed' ? (
+                        <StatusPill label="Failed" tone="red" />
+                      ) : (
+                        <StatusPill label="Paid" tone="green" />
+                      )}
                     </div>
                   </div>
                 ))}
@@ -327,7 +335,11 @@ export function SettlementsPage() {
             const last = updated.payouts[updated.payouts.length - 1];
             setPaying(null);
             setPaidNotice(
-              `Paid ${money(last?.amount)} to ${updated.agent2?.name ?? 'Agent 2'} for ${updated.applicationNumber} — settled and moved to Payout history.`
+              last?.status === 'processing'
+                ? `Sent ${money(last?.amount)} to ${updated.agent2?.name ?? 'Agent 2'} through RazorpayX for ${updated.applicationNumber} — it shows as Processing in Payout history until RazorpayX confirms it.`
+                : last?.status === 'failed'
+                  ? `RazorpayX could not pay ${updated.agent2?.name ?? 'Agent 2'} for ${updated.applicationNumber}: ${last.failureReason ?? 'payout failed'}. The money is back in the wallet.`
+                  : `Paid ${money(last?.amount)} to ${updated.agent2?.name ?? 'Agent 2'} for ${updated.applicationNumber} — settled and moved to Payout history.`
             );
             reload();
           }}
