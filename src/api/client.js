@@ -75,7 +75,7 @@ function refreshAccessToken() {
 
 // Endpoints allowed to answer 401 without it meaning "session over" — retrying
 // these would be circular, and a rejected sign-in is not an expiry.
-const NO_RETRY_PATHS = ['/auth/refresh', '/auth/login', '/auth/logout'];
+const NO_RETRY_PATHS = ['/auth/refresh', '/auth/login', '/auth/admin/login', '/auth/logout'];
 
 client.interceptors.response.use(
   (response) => response,
