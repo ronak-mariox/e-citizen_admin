@@ -30,4 +30,9 @@ export const PAYOUT_PURPOSES = [
 
 export const PAYOUT_PURPOSE_LABEL = Object.fromEntries(PAYOUT_PURPOSES.map((one) => [one.value, one.label]));
 
-export const PAYMENT_METHOD_LABEL = Object.fromEntries(PAYMENT_METHODS.map((one) => [one.value, one.label]));
+/* Razorpay is how a citizen pays online, never something an admin picks for a
+   payout, so it is named here but left out of PAYMENT_METHODS. */
+export const PAYMENT_METHOD_LABEL = {
+  ...Object.fromEntries(PAYMENT_METHODS.map((one) => [one.value, one.label])),
+  razorpay: 'Razorpay',
+};
