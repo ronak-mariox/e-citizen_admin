@@ -12,6 +12,7 @@ import { getErrorMessage } from '../api/client.js';
 import { DEFAULT_REPORT, RANGE_PRESETS, REPORT_ACCENTS, REPORT_TABS } from '../constants/reports.js';
 import { rupees } from '../utils/format.js';
 import '../styles/settings.css';
+import { useLiveRefresh } from '../hooks/useLiveRefresh.js';
 
 /* Reports — seven read-only views over the same platform records, one at a
    time behind a tab strip.
@@ -130,6 +131,8 @@ export function ReportsPage() {
   const [departments, setDepartments] = useState([]);
   const [reloadToken, setReloadToken] = useState(0);
   const reload = () => setReloadToken((token) => token + 1);
+  // The figures move with applications, payouts and the roster.
+  useLiveRefresh(reload, ['applications', 'wallet', 'agents']);
 
   /** Change some filters, keeping the rest; a default value drops out of the URL. */
   const update = (changes) =>

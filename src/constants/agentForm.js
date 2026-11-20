@@ -115,6 +115,13 @@ export const REQUIRED_DOCUMENTS = {
 /** INDIAN_MOBILE_REGEX from models/common_schema.js. */
 export const MOBILE_PATTERN = '[6-9][0-9]{9}';
 
+/** The department value for an agent posted to every department. */
+export const ALL_DEPARTMENTS = 'all';
+
+/** The department an agent row shows — all-departments agents have none. */
+export const agentDepartmentName = (agent, fallback = '—') =>
+  agent?.allDepartments ? 'All Departments' : agent?.department?.name ?? fallback;
+
 export const findLevel = (level) =>
   AGENT_LEVELS.find((item) => item.level === level) ?? AGENT_LEVELS[0];
 

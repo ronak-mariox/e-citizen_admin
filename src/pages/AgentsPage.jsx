@@ -14,7 +14,7 @@ import { StatusPill } from '../components/dashboard/StatusPill.jsx';
 import * as agentsApi from '../api/agents.js';
 import { getErrorMessage } from '../api/client.js';
 import { AGENT_LEVEL_LABEL } from '../constants/records.js';
-import { findLevel } from '../constants/agentForm.js';
+import { agentDepartmentName, findLevel } from '../constants/agentForm.js';
 import { agentVerification, userStatus } from '../constants/statusTone.js';
 import { initialsOf } from '../utils/format.js';
 import { useLiveRefresh } from '../hooks/useLiveRefresh.js';
@@ -269,7 +269,7 @@ export function AgentsPage() {
 
               <h1 className="page__title">Edit {editing.fullName}</h1>
               <p className="page__subtitle">
-                {editing.employeeId} · {editing.department?.name ?? 'No department'}
+                {editing.employeeId} · {agentDepartmentName(editing, 'No department')}
               </p>
             </div>
           </div>
@@ -495,7 +495,7 @@ export function AgentsPage() {
                     </div>
 
                     <div className="table__cell table__muted table__truncate" role="cell">
-                      {agent.department?.name ?? '—'}
+                      {agentDepartmentName(agent)}
                     </div>
 
                     <div className="table__cell table__muted" role="cell">

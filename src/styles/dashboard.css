@@ -771,6 +771,11 @@
   color: var(--color-negative);
 }
 
+/* A table value that needs action, e.g. an application whose agent was deleted. */
+.table__negative {
+  color: var(--color-negative);
+}
+
 /* ---------------------------------------------------------------- cards -- */
 
 .card {

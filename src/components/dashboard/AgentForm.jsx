@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import Icon from './Icon.jsx';
 import {
+  ALL_DEPARTMENTS,
   DOCUMENT_OPTIONS,
   MOBILE_PATTERN,
   STATUS_OPTIONS,
@@ -97,10 +98,15 @@ export function AgentForm({ level, onSubmit, onCancel, saving = false }) {
     onSubmit(buildAgentPayload(form, level));
   };
 
-  const posting = departments.find((item) => item._id === form.department);
+  /* 'all' posts the agent to every department: applications from any of them
+     can be routed here, and the employee ID carries ALL (E-ALL-A1-0001). */
+  const allDepartments = form.department === ALL_DEPARTMENTS;
+  const posting = allDepartments
+    ? null
+    : departments.find((item) => item._id === form.department);
 
   // Drives the employee-ID preview — the department's code is its segment of it.
-  const departmentCode = posting?.code;
+  const departmentCode = allDepartments ? 'ALL' : posting?.code;
 
   /* Reruns whenever the posting changes. The chips below belong to the previous
      department until this lands, which is why choosing one also clears the
@@ -108,7 +114,7 @@ export function AgentForm({ level, onSubmit, onCancel, saving = false }) {
   useEffect(() => {
     let cancelled = false;
 
-    if (!form.department) return undefined;
+    if (!form.department || form.department === ALL_DEPARTMENTS) return undefined;
 
     // The spinner has to appear when the request starts, not when it finishes.
     // eslint-disable-next-line react-hooks/set-state-in-effect -- see above
@@ -289,6 +295,9 @@ export function AgentForm({ level, onSubmit, onCancel, saving = false }) {
               <option value="">
                 {loadingDepartments ? 'Loading departments…' : 'Select…'}
               </option>
+              {departments.length > 0 && (
+                <option value={ALL_DEPARTMENTS}>All Departments (ALL)</option>
+              )}
               {departments.map((department) => (
                 <option value={department._id} key={department._id}>
                   {department.name} ({department.code})
@@ -310,7 +319,11 @@ export function AgentForm({ level, onSubmit, onCancel, saving = false }) {
               </span>
             )}
             {!loadingDepartments && !departmentError && departments.length > 0 && (
-              <span className="field2__hint">Decides the agent&apos;s employee ID and routing.</span>
+              <span className="field2__hint">
+                {allDepartments
+                  ? 'This agent can be assigned applications from every department.'
+                  : 'Decides the agent\u2019s employee ID and routing.'}
+              </span>
             )}
           </label>
 
@@ -334,7 +347,8 @@ export function AgentForm({ level, onSubmit, onCancel, saving = false }) {
               </div>
             ) : (
               <p className="field2__hint">
-                {!posting && 'Pick a department first.'}
+                {allDepartments && 'Handles every service in every department.'}
+                {!posting && !allDepartments && 'Pick a department first.'}
                 {posting && loadingServices && `Loading ${posting.name} services…`}
                 {posting &&
                   !loadingServices &&
@@ -342,9 +356,11 @@ export function AgentForm({ level, onSubmit, onCancel, saving = false }) {
               </p>
             )}
 
-            <span className="field2__hint">
-              Leave empty to allow every service in the department.
-            </span>
+            {!allDepartments && (
+              <span className="field2__hint">
+                Leave empty to allow every service in the department.
+              </span>
+            )}
           </div>
         </div>
       </section>

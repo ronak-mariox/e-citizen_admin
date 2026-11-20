@@ -172,9 +172,15 @@ export function AssignmentPanel({ application, onAssigned }) {
                 {/* Nobody until the engine finds someone eligible, which is a
                     real state and not a loading one — an application with no
                     available agent at this level waits here for an admin. */}
-                {holder?.name ?? (
-                  <span className="appempty">Nobody yet — waiting to be assigned</span>
-                )}
+                {holder?.name ??
+                  (role === 'agent_1' && application.assignedAgentRemoved ? (
+                    // Assigned to an account that has since been deleted.
+                    <span className="appempty table__negative">
+                      Agent removed — reassign this application
+                    </span>
+                  ) : (
+                    <span className="appempty">Nobody yet — waiting to be assigned</span>
+                  ))}
               </dd>
             </div>
 
