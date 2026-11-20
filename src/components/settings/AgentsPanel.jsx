@@ -9,7 +9,7 @@ import PanelSearch from './PanelSearch.jsx';
 import * as agentsApi from '../../api/agents.js';
 import { getErrorMessage } from '../../api/client.js';
 import { AGENT_LEVEL_LABEL } from '../../constants/records.js';
-import { findLevel } from '../../constants/agentForm.js';
+import { agentDepartmentName, findLevel } from '../../constants/agentForm.js';
 import {
   ACCOUNT_STATUS_FILTERS,
   AGENT_LEVEL_FILTERS,
@@ -279,7 +279,7 @@ export function AgentsPanel() {
                     </div>
 
                     <div className="table__cell table__muted table__truncate" role="cell">
-                      {agent.department?.name ?? '—'}
+                      {agentDepartmentName(agent)}
                     </div>
 
                     <div className="table__cell" role="cell">

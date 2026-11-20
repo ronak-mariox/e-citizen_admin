@@ -24,7 +24,10 @@ import {
 
 export function AgentEditForm({ agent, saving = false, onSubmit, onCancel }) {
   const level = findLevel(agent.role === 'agent_2' ? 'l2' : 'l1');
-  const department = agent.department ?? {};
+  // An all-departments agent has no single posting; shown as ALL.
+  const department = agent.allDepartments
+    ? { name: 'All Departments', code: 'ALL' }
+    : agent.department ?? {};
 
   const [form, setForm] = useState(() => ({
     fullName: agent.fullName ?? '',
@@ -219,15 +222,19 @@ export function AgentEditForm({ agent, saving = false, onSubmit, onCancel }) {
               </div>
             ) : (
               <p className="field2__hint">
-                {loadingServices
+                {agent.allDepartments
+                  ? 'Handles every service in every department.'
+                  : loadingServices
                   ? 'Loading services…'
                   : `No services are set up for ${department.name ?? 'this department'} yet, so this agent can be assigned any of them once there are.`}
               </p>
             )}
 
-            <span className="field2__hint">
-              Leave empty to allow every service in the department.
-            </span>
+            {!agent.allDepartments && (
+              <span className="field2__hint">
+                Leave empty to allow every service in the department.
+              </span>
+            )}
           </div>
         </div>
       </section>

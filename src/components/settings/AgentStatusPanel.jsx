@@ -7,6 +7,7 @@ import PanelCard from './PanelCard.jsx';
 import PanelSearch from './PanelSearch.jsx';
 import * as agentsApi from '../../api/agents.js';
 import { getErrorMessage } from '../../api/client.js';
+import { agentDepartmentName } from '../../constants/agentForm.js';
 import { ACCOUNT_STATUS_OPTIONS } from '../../constants/settings.js';
 import { userStatus } from '../../constants/statusTone.js';
 import { initialsOf } from '../../utils/format.js';
@@ -179,7 +180,7 @@ export function AgentStatusPanel({ onBack }) {
                   <span className="pick__body">
                     <span className="pick__name">{agent.fullName}</span>
                     <span className="pick__meta">
-                      {agent.employeeId} · {agent.department?.name ?? 'No department'}
+                      {agent.employeeId} · {agentDepartmentName(agent, 'No department')}
                     </span>
                   </span>
                   <StatusPill label={tone.label} tone={tone.tone} />

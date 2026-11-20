@@ -404,6 +404,13 @@ export function ApplicationsPage() {
                               : 'Assigned automatically'}
                           </span>
                         </span>
+                      ) : application.assignedAgentRemoved ? (
+                        /* Assigned to an account that has since been deleted —
+                           the work is stranded, not waiting, so it says so. */
+                        <span className="person__body">
+                          <span className="person__name table__negative">Agent removed</span>
+                          <span className="person__meta">Reassign this application</span>
+                        </span>
                       ) : (
                         <span className="table__muted">Unassigned</span>
                       )}
